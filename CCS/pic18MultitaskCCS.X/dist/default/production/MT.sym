@@ -1,0 +1,251 @@
+000     @SCRATCH
+001     @SCRATCH
+001     _RETURN_
+002     @SCRATCH
+003     @SCRATCH
+004     @INTERRUPT_AREA
+005     @INTERRUPT_AREA
+006     @INTERRUPT_AREA
+007     @INTERRUPT_AREA
+008     @INTERRUPT_AREA
+009     @INTERRUPT_AREA
+00A     @INTERRUPT_AREA
+00B     @INTERRUPT_AREA
+00C     @INTERRUPT_AREA
+00D     @INTERRUPT_AREA
+00E     @INTERRUPT_AREA
+00F     @INTERRUPT_AREA
+010     @INTERRUPT_AREA
+011     @INTERRUPT_AREA
+012     @INTERRUPT_AREA
+013     @INTERRUPT_AREA
+014     @INTERRUPT_AREA
+015     @INTERRUPT_AREA
+016     @INTERRUPT_AREA
+017-06E pList
+06F-076 pPila
+077     cmd
+078     speed
+079     nCount
+07A     pCount
+07B     processIdToSend
+07C     inter_quantum.temp
+07C     Timer0_ISR.@SCRATCH1
+07D     inter_quantum.k
+07D     Timer0_ISR.@SCRATCH2
+07E     Timer0_ISR.@SCRATCH3
+07E     inter_quantum.@SCRATCH1
+07F     Timer0_ISR.@SCRATCH4
+07F     inter_quantum.@SCRATCH2
+080     PORTA
+080-081 @MUL1616.P1
+080     Timer0_ISR.@SCRATCH5
+080     inter_quantum.@SCRATCH3
+081     PORTB
+081     inter_quantum.@SCRATCH4
+082     PORTC
+082-083 @MUL1616.P1
+082     inter_quantum.@SCRATCH5
+083     PORTD
+083     inter_quantum.@SCRATCH6
+084-087 @MUL3232.P1
+084     PORTE
+084     @MUL1616.@SCRATCH1
+088-08B @MUL3232.P1
+08C     @MUL3232.@SCRATCH1
+08D     @MUL3232.@SCRATCH2
+08E     @MUL3232.@SCRATCH3
+08F     @MUL3232.@SCRATCH4
+090     @MUL3232.@SCRATCH5
+091     @MUL3232.@SCRATCH6
+092-093 Task5.l1
+092     TRISA
+092-093 Task4.vk1
+092-093 Task1.vk1
+092     Inicio_SO.command
+092-093 Task2.t21
+093     Inicio_SO.process
+093     TRISB
+094-095 Task2.t22
+094     Inicio_SO.other
+094-095 Task5.k1
+094-095 Task1.vl1
+094     TRISC
+094-095 Task4.vl1
+095     TRISD
+095     Inicio_SO.gol
+096     Inicio_SO.indexProcess
+096-097 Task2.t23
+096     TRISE
+097     LoadProcess.pID
+097     UnLoadProcess.pID
+097     IsLoaded.pID
+097     Inicio_SO.@SCRATCH1
+098     UnLoadProcess.index
+098     IsLoaded.i
+098     @PSTRINGC_9600_31766_31767.@SCRATCH1
+098     LoadProcess.@SCRATCH1
+098     Inicio_SO.@SCRATCH2
+099     UnLoadProcess.i
+099     @PSTRINGC_9600_31766_31767.@SCRATCH2
+099     IsLoaded.@SCRATCH1
+099     LoadProcess.@SCRATCH2
+099     Inicio_SO.@SCRATCH3
+09A     LoadProcess.@SCRATCH3
+09A     UnLoadProcess.@SCRATCH1
+09A     Inicio_SO.@SCRATCH4
+09B     LoadProcess.@SCRATCH4
+09B     UnLoadProcess.@SCRATCH2
+09C     LoadProcess.@SCRATCH5
+09C     UnLoadProcess.@SCRATCH3
+09D     UnLoadProcess.@SCRATCH4
+09E     @PRINTF_D_9600_31766_31767.P1
+09E-09F @PRINTF_LU_9600_31766_31767.P2
+09E     UnLoadProcess.@SCRATCH5
+09F     @PRINTF_D_9600_31766_31767.P1
+09F     UnLoadProcess.@SCRATCH6
+0A0     @PRINTF_D_9600_31766_31767.@SCRATCH1
+0A0     @PRINTF_LU_9600_31766_31767.@SCRATCH1
+0A1     @PRINTF_D_9600_31766_31767.@SCRATCH2
+0A1     @PRINTF_LU_9600_31766_31767.@SCRATCH2
+0A2     @PRINTF_D_9600_31766_31767.@SCRATCH3
+0A2     @PRINTF_LU_9600_31766_31767.@SCRATCH3
+0A3     @PRINTF_D_9600_31766_31767.@SCRATCH4
+0A3     @PRINTF_LU_9600_31766_31767.@SCRATCH4
+0A4     @DIV88.P1
+0A4     @PRINTF_LU_9600_31766_31767.@SCRATCH5
+0A5     @DIV88.P1
+0A5     @PRINTF_LU_9600_31766_31767.@SCRATCH6
+0A6     @DIV88.@SCRATCH1
+0A6     @PRINTF_LU_9600_31766_31767.@SCRATCH7
+F6D     UCON
+F6D.3   USBEN
+F83     PSP_DATA
+F83     lcd
+F8C     lcdlat
+F95     lcdtris
+F9E     PIR1
+F9E.5   RCIF
+FB4.6   C1OUT
+FB4.7   C2OUT
+FBB     CCP_2
+FBB     CCP_2_LOW
+FBC     CCP_2_HIGH
+FBD     CCP1CON
+FBD.4   CCP4
+FBD.5   CCP5
+FBE     CCPR1L
+FBE     CCP_1
+FBE     CCP_1_LOW
+FBF     CCP_1_HIGH
+FC0     ADCON2
+FC2     ADCON0
+FC2.3   ANALOGICO
+FC3     ADRESL
+FC4     ADRESH
+FCD     T1CON
+FD0     RCON
+FD0.7   IPEN
+FD5     T0CON
+FD6     TMR0L
+FD7     TMR0H
+FD8     status
+FE0     bsr
+FE1-FE2 @WRITE_PACKED_MEMORY.P1
+FE1-FE2 @READ_PACKED_MEMORY.P2
+FE8     wreg
+FE9-FEA @READ_PACKED_MEMORY.P1
+FE9-FEA @WRITE_PROGRAM_MEMORY.P2
+FE9-FEA @READ_PROGRAM_MEMORY.P3
+FE9-FEA @WRITE_PACKED_MEMORY.P4
+FF2     INTCON
+FF2.2   TMR0IF
+FF2.5   TMR0IE
+FF6-FF8 @WRITE_PROGRAM_MEMORY.P1
+FF6-FF8 @READ_PROGRAM_MEMORY.P2
+FF9     PCL
+FFA     PCLATH
+FFB     PCLATU
+FFC     STKPTR
+FFD     TOSL
+FFE     TOSH
+FFF     TOSU
+
+ROM Allocation:
+0000AE  @DIV88
+0000D6  @PRINTF_D_9600_31766_31767
+000188  @PRINTF_LU_9600_31766_31767
+00022C  Timer0_ISR
+000342  desactivar_timer
+000346  @MUL1616
+000366  @MUL3232
+0003BC  inter_quantum
+000556  Data_ISR
+00057A  @PSTRINGC_9600_31766_31767
+00059C  @const767.call
+0005A4  @const769.call
+0005AC  @const770.call
+0005B4  @const771.call
+0005BC  @const772.call
+0005C4  @const773.call
+0005CC  @const774.call
+0005D4  @const775.call
+0005DC  @const776.call
+0005E4  @const777.call
+0005EC  IsLoaded
+000618  LoadProcess
+000734  UnLoadProcess
+000932  @goto11598
+000962  activar_timer
+00096A  @goto11631
+0009B8  @goto11651
+0009E4  Port_Init
+000A14  inicio_pwm
+000A34  Procesos_Init
+000AD4  inte_Init
+000ADE  Config_tmrs
+000AEE  MCU_Init
+000AFE  @cinit1
+000AFE  MAIN
+000B2C  @cinit2
+001000  Task1
+001352  Task2
+002010  Task3
+002510  Task4
+003010  Task5
+004000  Inicio_SO
+
+Project Directory:
+    C:\Users\JASPHER\MPLABXProjects\MultiTaskCCS.X\
+
+Project Files:
+    MT.c                                                    [02-Dec-14 00:33  CRC=DABAEAE3]
+    ..\..\..\..\Program Files (x86)\PICC\devices\18F4550.h  [03-Jul-13 14:29  CRC=A157EDDE]
+    ..\..\..\..\Program Files (x86)\PICC\drivers\LCD.c      [23-Aug-12 09:01  CRC=D28E8746]
+
+Source signature=212FE74D
+
+Units:
+    MT (main)
+
+Compiler Settings:
+    Processor:      PIC18F4550
+    Pointer Size:   16
+    ADC Range:      0-1023
+    Opt Level:      9
+    Short,Int,Long: UNSIGNED: 1,8,16
+    Float,Double:   32,32
+    Predefined symbols:
+       #define __18F4550 TRUE
+
+Output Files:
+    XREF file:   dist\default\production\MT.xsym
+    Errors:      dist\default\production\MT.err
+    Ext Symbols: dist\default\production\MT.esym
+    INHX32:      dist\default\production\MT.hex
+    Symbols:     dist\default\production\MT.sym
+    List:        dist\default\production\MT.lst
+    Debug/COFF:  dist\default\production\MT.cof
+    Project:     MT.ccspjt
+    Call Tree:   dist\default\production\MT.tre
+    Statistics:  dist\default\production\MT.STA

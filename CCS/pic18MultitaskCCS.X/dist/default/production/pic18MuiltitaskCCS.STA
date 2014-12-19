@@ -1,0 +1,84 @@
+
+ROM used:   5924/16384 (18%)
+            14108/16384 (43%) including unused fragments
+
+            3.4 Average locations per line
+            12.0 Average locations per statement
+
+RAM used:   124/2048 (6%) at main() level
+            166/2048 (8%) worst case
+
+Stack used: 6 worst case (2 in main + 4 for interrupts)
+Stack size: 31
+
+Lines Stmts  %   Files
+----- ----- ---  -----
+  933   493 100  pic18MuiltitaskCCS.c
+  821     0   0  ..\..\..\..\..\Program Files (x86)\PICC\devices\18F4550.h
+----- -----
+ 1754   493 Total
+
+Page ROM  %  RAM   Vol Diff  Functions:
+---- --- --- ---   --- ----  ----------
+0      8   0    0    42  1.4  enableQuantum
+0      6   0    0    17  0.8  disableQuantum
+0     32   0    0   110  2.1  Init_PWM
+0    278   2    5   371  4.6  Isr_TIMER0
+0     40   0    3             @DIV88
+0    178   2    6             @PRINTF_D_9600_31766_31767
+0    164   1    9             @PRINTF_LU_9600_31766_31767
+0    336   3    6   700  6.9  Isr_QUANTUM
+0     32   0    5             @MUL1616
+0     86   1   14             @MUL3232
+0     36   0    0   127  3.0  Isr_Data
+0    496   4    4  1807  4.4  Task1
+0    584   5    4  2293  5.4  Task2
+0     32   0    0   197  3.1  Task3
+0   1288  11    4  6029  4.5  Task4
+0    260   2    4   913  4.4  Task5
+0     48   0    0   245  1.8  Init_PORTS
+0     10   0    0    32  1.0  Init_INTERRUPTS
+0     16   0    0    88  1.7  Init_TIMERS
+0    160   1    0  1728  3.0  Init_PROCESSES
+0     16   0    0    78  1.6  Init_MCI
+0     64   1    0    70  2.0  MAIN
+0     44   0    3   166  5.6  IsLoaded
+0    284   2    6   215  3.5  LoadProcess
+0    506   4    9  1328  8.4  UnLoadProcess
+0     48   0    0             @goto11479
+0    580   5    6  2850  9.0  OS
+0     78   1    0             @goto11512
+0     44   0    0             @goto11532
+ Inline         0             @cinit1
+
+Program metrics:
+    Functions               21
+    Statements              493
+    Comments                188
+    Volume (V)              29088
+    Difficulty (D)          81.2
+    Effort to implement (E) 2361824
+    Time to implement (T)   36 hours, 27 minutes
+    Est Delivered Bugs (B)  6
+    Cyclomatic Complexity   120
+    Maintainability (MI)    31
+
+ Segment     Used  Free
+-----------  ----  ----
+00000-00006     4  4  
+00008-000AC   166  0  
+000AE-00FFE  2514  1408  
+01000-01350   496  354  
+01352-02000   584  2664  
+02002-0200E     0  14  
+02010-02500    32  1234  
+02502-0250E     0  14  
+02510-03000  1288  1514  
+03002-0300E     0  14  
+03010-03500   260  1006  
+03502-03FFE     0  2814  
+04000-04900   580  1726  
+04902-07FFE     0  14078  
+
+
+

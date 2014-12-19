@@ -1,0 +1,12 @@
+C:\Users\JASPHER\MPLABXProjects\MultiTaskCCS.X\MT.c:231:1:  Warning#203  Condition always TRUE
+C:\Users\JASPHER\MPLABXProjects\MultiTaskCCS.X\MT.c:423:1:  Warning#203  Condition always TRUE
+C:\Users\JASPHER\MPLABXProjects\MultiTaskCCS.X\MT.c:437:1:  Warning#203  Condition always TRUE
+C:\Users\JASPHER\MPLABXProjects\MultiTaskCCS.X\MT.c:513:1:  Warning#203  Condition always TRUE
+C:\Users\JASPHER\MPLABXProjects\MultiTaskCCS.X\MT.c:735:1:  Warning#203  Condition always TRUE
+C:\Users\JASPHER\MPLABXProjects\MultiTaskCCS.X\MT.c:1200:173:  Warning#216  Interrupts disabled during call to prevent re-entrancy:  (@PRINTF_D_9600_31766_31767)
+C:\Users\JASPHER\MPLABXProjects\MultiTaskCCS.X\MT.c:1200:173:  Warning#216  Interrupts disabled during call to prevent re-entrancy:  (@PRINTF_LU_9600_31766_31767)
+C:\Users\JASPHER\MPLABXProjects\MultiTaskCCS.X\MT.c:310:129:  Warning#202  Variable never used:   t23
+C:\Users\JASPHER\MPLABXProjects\MultiTaskCCS.X\MT.c:1015:240:  Warning#202  Variable never used:   other
+      Memory usage:   ROM=19%      RAM=6% - 8%
+      0 Errors,  9 Warnings.
+Build Successful.

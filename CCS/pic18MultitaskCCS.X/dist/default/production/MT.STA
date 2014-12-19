@@ -1,0 +1,96 @@
+
+ROM used:   6270/16384 (19%)
+            14150/16384 (43%) including unused fragments
+
+            2.5 Average locations per line
+            10.6 Average locations per statement
+
+RAM used:   124/2048 (6%) at main() level
+            167/2048 (8%) worst case
+
+Stack used: 6 worst case (2 in main + 4 for interrupts)
+Stack size: 31
+
+Lines Stmts  %   Files
+----- ----- ---  -----
+ 1204   507  86  MT.c
+  821     0   0  ..\..\..\..\Program Files (x86)\PICC\devices\18F4550.h
+  456    84  14  ..\..\..\..\Program Files (x86)\PICC\drivers\LCD.c
+----- -----
+ 2481   591 Total
+
+Page ROM  %  RAM   Vol Diff  Functions:
+---- --- --- ---   --- ----  ----------
+0      8   0    0    42  1.4  activar_timer
+0      4   0    0    17  0.8  desactivar_timer
+0     32   0    0   110  2.1  inicio_pwm
+0    278   2    5   371  4.6  Timer0_ISR
+0     40   0    3             @DIV88
+0    178   1    6             @PRINTF_D_9600_31766_31767
+0    164   1    9             @PRINTF_LU_9600_31766_31767
+0    410   3    6   823  6.9  inter_quantum
+0     32   0    5             @MUL1616
+0     86   1   14             @MUL3232
+0     36   0    0   127  3.0  Data_ISR
+0    496   4    4  1807  4.4  Task1
+0    704   6    6  2669  5.4  Task2
+0      8   0    0             @const767
+0     34   0    2             @PSTRINGC_9600_31766_31767
+0      8   0    0             @const769
+0      8   0    0             @const770
+0      8   0    0             @const771
+0      8   0    0             @const772
+0      8   0    0             @const773
+0      8   0    0             @const774
+0      8   0    0             @const775
+0      8   0    0             @const776
+0      8   0    0             @const777
+0     32   0    0   197  3.1  Task3
+0   1288  10    4  6029  4.5  Task4
+0    260   2    4   913  4.4  Task5
+0     48   0    0   245  1.8  Port_Init
+0     10   0    0    32  1.0  inte_Init
+0     16   0    0    88  1.7  Config_tmrs
+0    160   1    0  1728  3.0  Procesos_Init
+0     16   0    0    78  1.6  MCU_Init
+0     58   0    0    37  1.1  MAIN
+0     44   0    3   166  5.6  IsLoaded
+0    284   2    6   215  3.5  LoadProcess
+0    510   4    9  1328  8.4  UnLoadProcess
+0     48   0    0             @goto11598
+0    622   5    7  2984  9.0  Inicio_SO
+0     78   1    0             @goto11631
+0     44   0    0             @goto11651
+ Inline         0             @cinit1
+
+Program metrics:
+    Functions               21
+    Statements              591
+    Comments                439
+    Volume (V)              29907
+    Difficulty (D)          79.6
+    Effort to implement (E) 2379756
+    Time to implement (T)   36 hours, 43 minutes
+    Est Delivered Bugs (B)  6
+    Cyclomatic Complexity   120
+    Maintainability (MI)    114
+
+ Segment     Used  Free
+-----------  ----  ----
+00000-00006     4  4  
+00008-000AC   166  0  
+000AE-00FFE  2698  1224  
+01000-01350   496  354  
+01352-02000   704  2544  
+02002-0200E     0  14  
+02010-02500    32  1234  
+02502-0250E     0  14  
+02510-03000  1288  1514  
+03002-0300E     0  14  
+03010-03500   260  1006  
+03502-03FFE     0  2814  
+04000-04900   622  1684  
+04902-07FFE     0  14078  
+
+
+

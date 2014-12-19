@@ -1,0 +1,5 @@
+C:\Users\JASPHER\Documents\MPLABXProjects\pic18MultitaskCCS.X\pic18MuiltitaskCCS.c:929:174:  Warning#216  Interrupts disabled during call to prevent re-entrancy:  (@PRINTF_D_9600_31766_31767)
+C:\Users\JASPHER\Documents\MPLABXProjects\pic18MultitaskCCS.X\pic18MuiltitaskCCS.c:929:174:  Warning#216  Interrupts disabled during call to prevent re-entrancy:  (@PRINTF_LU_9600_31766_31767)
+      Memory usage:   ROM=18%      RAM=6% - 8%
+      0 Errors,  2 Warnings.
+Build Successful.

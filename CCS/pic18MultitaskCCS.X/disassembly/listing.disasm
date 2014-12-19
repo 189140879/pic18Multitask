@@ -1,0 +1,5003 @@
+Disassembly Listing for MultiTaskCCS
+Generated From:
+
+---  C:/Users/JASPHER/MPLABXProjects/MultiTaskCCS.X/MT.c  -----------------------------------------------
+1:             #include <18F4550.h>
+0000  EF7F     GOTO 0xAFE
+0008  6E04     MOVWF 0x4, ACCESS
+000A  CFD8     MOVFF STATUS, 0x5
+000E  CFE0     MOVFF BSR, 0x6
+0012  0100     MOVLB 0x0
+0014  CFE9     MOVFF FSR0L, 0xC
+0018  CFEA     MOVFF FSR0H, 0x7
+001C  CFE1     MOVFF FSR1L, 0x8
+0020  CFE2     MOVFF FSR1H, 0x9
+0024  CFD9     MOVFF FSR2L, 0xA
+0028  CFDA     MOVFF FSR2H, 0xB
+002C  CFF3     MOVFF PRODL, 0x12
+0030  CFF4     MOVFF PRODH, 0x13
+0034  CFFA     MOVFF PCLATH, 0x14
+0038  C000     MOVFF 0x0, 0xE
+003C  C001     MOVFF 0x1, 0xF
+0040  C002     MOVFF 0x2, 0x10
+0044  C003     MOVFF 0x3, 0x11
+0048  AAF2     BTFSS INTCON, 5, ACCESS
+004A  EF2A     GOTO 0x54
+004E  B4F2     BTFSC INTCON, 2, ACCESS
+0050  EF16     GOTO 0x22C
+0054  A09D     BTFSS PIE1, 0, ACCESS
+0056  EF30     GOTO 0x60
+005A  B09E     BTFSC PIR1, 0, ACCESS
+005C  EFDE     GOTO 0x3BC
+0060  AA9D     BTFSS PIE1, 5, ACCESS
+0062  EF36     GOTO 0x6C
+0066  BA9E     BTFSC PIR1, 5, ACCESS
+0068  EFAB     GOTO 0x556
+006C  C00E     MOVFF 0xE, 0x0
+0070  C00F     MOVFF 0xF, 0x1
+0074  C010     MOVFF 0x10, 0x2
+0078  C011     MOVFF 0x11, 0x3
+007C  C00C     MOVFF 0xC, FSR0L
+0080  C007     MOVFF 0x7, FSR0H
+0084  8E07     BSF 0x7, 7, ACCESS
+0086  C008     MOVFF 0x8, FSR1L
+008A  C009     MOVFF 0x9, FSR1H
+008E  C00A     MOVFF 0xA, FSR2L
+0092  C00B     MOVFF 0xB, FSR2H
+0096  C012     MOVFF 0x12, PRODL
+009A  C013     MOVFF 0x13, PRODH
+009E  C014     MOVFF 0x14, PCLATH
+00A2  5004     MOVF 0x4, W, ACCESS
+00A4  C006     MOVFF 0x6, BSR
+00A8  C005     MOVFF 0x5, STATUS
+00AC  0010     RETFIE 0
+2:             #device adc=10
+3:             /*#fuses HS, NOPROTECT, NOWDT, NOLVP //PUT
+4:             #use delay(crystal = 20000000, clock=20000000)*/
+5:             
+6:             #FUSES NOWDT                    //No Watch Dog Timer
+7:             #FUSES WDT128                   //Watch Dog Timer uses 1:128 Postscale
+8:             #FUSES NOBROWNOUT               //No brownout reset
+9:             #FUSES NOLVP                    //No low voltage prgming, B3(PIC16) or B5(PIC18) used for I/O
+10:            #FUSES NOXINST                  //Extended set extension and Indexed Addressing mode disabled (Legacy mode)
+11:            #fuses HSPLL,NOWDT,NOPROTECT,NOLVP,USBDIV,PLL5,CPUDIV1 
+12:            #use delay(clock=48M,crystal=20M)
+13:            
+14:            #use rs232(baud = 9600, xmit = PIN_C6, rcv = PIN_C7)
+15:            
+16:            #include "LCD.c"
+17:            
+18:            //Punteros
+19:            
+20:            #byte PORTA = 0x80
+21:            #byte PORTB = 0x81
+22:            #byte PORTC = 0x82
+23:            #byte PORTD = 0x83
+24:            #byte PORTE = 0x84
+25:            #byte TRISA = 0x92
+26:            #byte TRISB = 0x93
+27:            #byte TRISC = 0x94
+28:            #byte TRISD = 0x95
+29:            #byte TRISE = 0x96
+30:            
+31:            
+32:            #byte TOSU = 0xFFF
+33:            #byte TOSH = 0xFFE
+34:            #byte TOSL = 0xFFD
+35:            #byte STKPTR = 0xFFC
+36:            #byte PCLATU = 0xFFB
+37:            #byte PCLATH = 0xFFA
+38:            #byte PCL = 0xFF9
+39:            #byte TMR0H = 0xFD7
+40:            #byte TMR0L = 0xFD6
+41:            #byte T0CON = 0xFD5
+42:            #byte T1CON = 0xFCD
+43:            #byte bsr = 0xFE0
+44:            #byte wreg = 0xFE8
+45:            #byte status = 0xFD8
+46:            #byte RCON = 0xFD0
+47:            #byte INTCON = 0xFF2
+48:            
+49:            //Agregado (2 líneas):
+50:            #byte PIR1 = 0XF9E
+51:            #bit RCIF = PIR1.5
+52:            
+53:            #byte ADCON0 = 0xFC2
+54:            #byte ADCON2 = 0xFC0
+55:            #byte ADRESL = 0xFC3
+56:            #byte ADRESH = 0xFC4
+57:            #bit ANALOGICO = ADCON0.3
+58:            #bit TMR0IE = INTCON.5
+59:            #bit TMR0IF = INTCON.2
+60:            #bit IPEN = RCON.7
+61:            
+62:            #byte CCPR1L = 0xFBE
+63:            #byte CCP1CON = 0XFBD
+64:            #bit CCP5 = CCP1CON.5
+65:            #bit CCP4 = CCP1CON.4
+66:            
+67:            #byte UCON=0xF6D
+68:            #bit USBEN=UCON.3
+69:            
+70:            
+71:            
+72:            //long num;
+73:            
+74:            
+75:            //int idenv;
+76:            //long direv;
+77:            //int  estenv;
+78:            //long actual;
+79:            
+80:            // Propiedades de programa
+81:            
+82:            struct pcb
+83:            {
+84:                long di;
+85:                long df;
+86:                long da;
+87:                int estado;
+88:                int w_reg;
+89:                int status;
+90:                int bsr;
+91:                int id;
+92:            } pList[8]; // Lista de procesos
+93:            int pPila[8]; // Pila de procesos
+94:            char cmd = 0x00; // Comando
+95:            char speed = '-';
+96:            int nCount = 0; // Numero de procesos
+97:            int pCount; // Total de procesos
+98:            
+99:            
+100:           int tabla[10] = {63, 6, 91, 79, 102, 109, 125, 7, 127, 103};
+101:           
+102:           void activar_timer()
+103:           {
+104:               //enable_interrupts(INT_TIMER1);
+105:               //set_timer1(49910);
+106:               setup_timer_1(T1_INTERNAL | T1_DIV_BY_8);
+0962  0EB5     MOVLW 0xB5
+0964  6ECD     MOVWF T1CON, ACCESS
+107:               enable_interrupts(INT_TIMER1);
+0966  809D     BSF PIE1, 0, ACCESS
+0968  0012     RETURN 0
+108:           }
+109:           
+110:           void desactivar_timer()
+111:           {
+112:               disable_interrupts(INT_TIMER1);
+0342  909D     BCF PIE1, 0, ACCESS
+0344  0012     RETURN 0
+113:           }
+114:           
+115:           /*
+116:           void inicio_ad()
+117:           {
+118:               setup_adc(ADC_CLOCK_INTERNAL);
+119:               setup_adc_ports(AN0_TO_AN1_ANALOG);
+120:           }
+121:            */
+122:           void inicio_pwm()
+123:           {
+124:               setup_ccp1(ccp_pwm);
+0A14  9494     BCF TRISC, 2, ACCESS
+0A16  948B     BCF LATC, 2, ACCESS
+0A18  0E0C     MOVLW 0xC
+0A1A  6EBD     MOVWF CCP1CON, ACCESS
+0A1C  6AB7     CLRF ECCP1DEL, ACCESS
+0A1E  6AB6     CLRF ECCP1AS, ACCESS
+125:               setup_timer_2(t2_div_by_16, 249, 10); //Para un periodo de 1.6ms
+0A20  0E48     MOVLW 0x48
+0A22  0906     IORLW 0x6
+0A24  6ECA     MOVWF T2CON, ACCESS
+0A26  0EF9     MOVLW 0xF9
+0A28  6ECB     MOVWF PR2, ACCESS
+126:               CCPR1L = 0x00;
+0A2A  6ABE     CLRF CCPR1L, ACCESS
+127:               CCP5 = 0x00;
+0A2C  9ABD     BCF CCP1CON, 5, ACCESS
+128:               CCP4 = 0x00;
+0A2E  98BD     BCF CCP1CON, 4, ACCESS
+0A30  EF7A     GOTO 0xAF4
+129:           }
+130:           
+131:           
+132:           
+133:           int processIdToSend = -1;
+134:           #INT_TIMER0
+135:           
+136:           void Timer0_ISR()
+137:           {
+138:           
+139:               output_toggle(PIN_C1);
+022C  9294     BCF TRISC, 1, ACCESS
+022E  728B     BTG LATC, 1, ACCESS
+140:               //output_toggle(PIN_D5);
+141:           
+142:               if (nCount > 0)
+0230  5379     MOVF nCount, F, BANKED
+0232  B4D8     BTFSC STATUS, 2, ACCESS
+0234  D083     BRA 0x33C
+143:               {
+144:           
+145:                   processIdToSend++;
+0236  2B85     INCF processIdToSend, F, BANKED
+146:                   if (processIdToSend > pCount)
+0238  5185     MOVF processIdToSend, W, BANKED
+023A  5D7A     SUBWF pCount, W, BANKED
+023C  E201     BC 0x240
+147:                       processIdToSend = 0;
+023E  6B85     CLRF processIdToSend, BANKED
+148:                   printf("$%i %Lu %i;", pList[0].id, pList[0].da, pList[0].estado);
+0240  0E24     MOVLW 0x24
+0242  A89E     BTFSS PIR1, 4, ACCESS
+0244  D7FE     BRA 0x242
+0246  6EAD     MOVWF TXREG, ACCESS
+0248  C021     MOVFF 0x21, _invar3
+024C  0E18     MOVLW 0x18
+024E  6FA9     MOVWF _invar4, BANKED
+0250  DF42     RCALL PRINTF_D_9600_31766_31767
+0252  0E20     MOVLW 0x20
+0254  A89E     BTFSS PIR1, 4, ACCESS
+0256  D7FE     BRA 0x254
+0258  6EAD     MOVWF TXREG, ACCESS
+025A  0E10     MOVLW 0x10
+025C  6EE9     MOVWF FSR0L, ACCESS
+025E  C01C     MOVFF 0x1C, _invar4
+0262  C01B     MOVFF 0x1B, _invar3
+0266  DF90     RCALL PRINTF_LU_9600_31766_31767
+0268  0E20     MOVLW 0x20
+026A  A89E     BTFSS PIR1, 4, ACCESS
+026C  D7FE     BRA 0x26A
+026E  6EAD     MOVWF TXREG, ACCESS
+0270  C01D     MOVFF 0x1D, _invar3
+0274  0E18     MOVLW 0x18
+0276  6FA9     MOVWF _invar4, BANKED
+0278  DF2E     RCALL PRINTF_D_9600_31766_31767
+027A  0E3B     MOVLW 0x3B
+027C  A89E     BTFSS PIR1, 4, ACCESS
+027E  D7FE     BRA 0x27C
+0280  6EAD     MOVWF TXREG, ACCESS
+149:                   printf("$%i %Lu %i;", pList[processIdToSend].id, pList[processIdToSend].da, pList[processIdToSend].estado);
+0282  5185     MOVF processIdToSend, W, BANKED
+0284  0D0B     MULLW 0xB
+0286  50F3     MOVF PRODL, W, ACCESS
+0288  6B87     CLRF k, BANKED
+028A  6F86     MOVWF temp, BANKED
+028C  0E0A     MOVLW 0xA
+028E  2586     ADDWF temp, W, BANKED
+0290  6E01     MOVWF 0x1, ACCESS
+0292  0E00     MOVLW 0x0
+0294  2187     ADDWFC k, W, BANKED
+0296  6E03     MOVWF 0x3, ACCESS
+0298  5001     MOVF 0x1, W, ACCESS
+029A  0F17     ADDLW 0x17
+029C  6EE9     MOVWF FSR0L, ACCESS
+029E  0E00     MOVLW 0x0
+02A0  2003     ADDWFC 0x3, W, ACCESS
+02A2  6EEA     MOVWF FSR0H, ACCESS
+02A4  CFEF     MOVFF INDF0, temp
+02A8  5185     MOVF processIdToSend, W, BANKED
+02AA  0D0B     MULLW 0xB
+02AC  50F3     MOVF PRODL, W, ACCESS
+02AE  6B88     CLRF 0x88, BANKED
+02B0  6F87     MOVWF k, BANKED
+02B2  0E04     MOVLW 0x4
+02B4  2587     ADDWF k, W, BANKED
+02B6  6E01     MOVWF 0x1, ACCESS
+02B8  0E00     MOVLW 0x0
+02BA  2188     ADDWFC 0x88, W, BANKED
+02BC  6E03     MOVWF 0x3, ACCESS
+02BE  5001     MOVF 0x1, W, ACCESS
+02C0  0F17     ADDLW 0x17
+02C2  6EE9     MOVWF FSR0L, ACCESS
+02C4  0E00     MOVLW 0x0
+02C6  2003     ADDWFC 0x3, W, ACCESS
+02C8  6EEA     MOVWF FSR0H, ACCESS
+02CA  CFEC     MOVFF PREINC0, 0x88
+02CE  52ED     MOVF POSTDEC0, F, ACCESS
+02D0  CFEF     MOVFF INDF0, k
+02D4  5185     MOVF processIdToSend, W, BANKED
+02D6  0D0B     MULLW 0xB
+02D8  50F3     MOVF PRODL, W, ACCESS
+02DA  6B8A     CLRF _invar6, BANKED
+02DC  6F89     MOVWF 0x89, BANKED
+02DE  0E06     MOVLW 0x6
+02E0  2589     ADDWF 0x89, W, BANKED
+02E2  6E01     MOVWF 0x1, ACCESS
+02E4  0E00     MOVLW 0x0
+02E6  218A     ADDWFC _invar6, W, BANKED
+02E8  6E03     MOVWF 0x3, ACCESS
+02EA  5001     MOVF 0x1, W, ACCESS
+02EC  0F17     ADDLW 0x17
+02EE  6EE9     MOVWF FSR0L, ACCESS
+02F0  0E00     MOVLW 0x0
+02F2  2003     ADDWFC 0x3, W, ACCESS
+02F4  6EEA     MOVWF FSR0H, ACCESS
+02F6  CFEF     MOVFF INDF0, 0x89
+02FA  0E24     MOVLW 0x24
+02FC  A89E     BTFSS PIR1, 4, ACCESS
+02FE  D7FE     BRA 0x2FC
+0300  6EAD     MOVWF TXREG, ACCESS
+0302  C086     MOVFF temp, _invar3
+0306  0E18     MOVLW 0x18
+0308  6FA9     MOVWF _invar4, BANKED
+030A  DEE5     RCALL PRINTF_D_9600_31766_31767
+030C  0E20     MOVLW 0x20
+030E  A89E     BTFSS PIR1, 4, ACCESS
+0310  D7FE     BRA 0x30E
+0312  6EAD     MOVWF TXREG, ACCESS
+0314  0E10     MOVLW 0x10
+0316  6EE9     MOVWF FSR0L, ACCESS
+0318  C088     MOVFF 0x88, _invar4
+031C  C087     MOVFF k, _invar3
+0320  DF33     RCALL PRINTF_LU_9600_31766_31767
+0322  0E20     MOVLW 0x20
+0324  A89E     BTFSS PIR1, 4, ACCESS
+0326  D7FE     BRA 0x324
+0328  6EAD     MOVWF TXREG, ACCESS
+032A  C089     MOVFF 0x89, _invar3
+032E  0E18     MOVLW 0x18
+0330  6FA9     MOVWF _invar4, BANKED
+0332  DED1     RCALL PRINTF_D_9600_31766_31767
+0334  0E3B     MOVLW 0x3B
+0336  A89E     BTFSS PIR1, 4, ACCESS
+0338  D7FE     BRA 0x336
+033A  6EAD     MOVWF TXREG, ACCESS
+150:               }
+151:               //set_timer0(26472);
+152:           }
+153:           
+154:           
+033C  94F2     BCF INTCON, 2, ACCESS
+033E  EF36     GOTO 0x6C
+155:           #INT_TIMER1
+156:           
+157:           void inter_quantum()
+158:           {
+159:               //output_toggle(PIN_D0);
+160:           
+161:               pList[pPila[0]].w_reg = wreg;
+03BC  516F     MOVF pPila, W, BANKED
+03BE  0D0B     MULLW 0xB
+03C0  50F3     MOVF PRODL, W, ACCESS
+03C2  6B89     CLRF 0x89, BANKED
+03C4  6F88     MOVWF 0x88, BANKED
+03C6  0E07     MOVLW 0x7
+03C8  2588     ADDWF 0x88, W, BANKED
+03CA  6E01     MOVWF 0x1, ACCESS
+03CC  0E00     MOVLW 0x0
+03CE  2189     ADDWFC 0x89, W, BANKED
+03D0  6E03     MOVWF 0x3, ACCESS
+03D2  5001     MOVF 0x1, W, ACCESS
+03D4  0F17     ADDLW 0x17
+03D6  6EE9     MOVWF FSR0L, ACCESS
+03D8  0E00     MOVLW 0x0
+03DA  2003     ADDWFC 0x3, W, ACCESS
+03DC  6EEA     MOVWF FSR0H, ACCESS
+03DE  CFE8     MOVFF WREG, INDF0
+162:               pList[pPila[0]].status = status;
+03E2  516F     MOVF pPila, W, BANKED
+03E4  0D0B     MULLW 0xB
+03E6  50F3     MOVF PRODL, W, ACCESS
+03E8  6B89     CLRF 0x89, BANKED
+03EA  6F88     MOVWF 0x88, BANKED
+03EC  0E08     MOVLW 0x8
+03EE  2588     ADDWF 0x88, W, BANKED
+03F0  6E01     MOVWF 0x1, ACCESS
+03F2  0E00     MOVLW 0x0
+03F4  2189     ADDWFC 0x89, W, BANKED
+03F6  6E03     MOVWF 0x3, ACCESS
+03F8  5001     MOVF 0x1, W, ACCESS
+03FA  0F17     ADDLW 0x17
+03FC  6EE9     MOVWF FSR0L, ACCESS
+03FE  0E00     MOVLW 0x0
+0400  2003     ADDWFC 0x3, W, ACCESS
+0402  6EEA     MOVWF FSR0H, ACCESS
+0404  CFD8     MOVFF STATUS, INDF0
+163:               pList[pPila[0]].w_reg = wreg;
+0408  516F     MOVF pPila, W, BANKED
+040A  0D0B     MULLW 0xB
+040C  50F3     MOVF PRODL, W, ACCESS
+040E  6B89     CLRF 0x89, BANKED
+0410  6F88     MOVWF 0x88, BANKED
+0412  0E07     MOVLW 0x7
+0414  2588     ADDWF 0x88, W, BANKED
+0416  6E01     MOVWF 0x1, ACCESS
+0418  0E00     MOVLW 0x0
+041A  2189     ADDWFC 0x89, W, BANKED
+041C  6E03     MOVWF 0x3, ACCESS
+041E  5001     MOVF 0x1, W, ACCESS
+0420  0F17     ADDLW 0x17
+0422  6EE9     MOVWF FSR0L, ACCESS
+0424  0E00     MOVLW 0x0
+0426  2003     ADDWFC 0x3, W, ACCESS
+0428  6EEA     MOVWF FSR0H, ACCESS
+042A  CFE8     MOVFF WREG, INDF0
+164:               pList[pPila[0]].bsr = bsr;
+042E  516F     MOVF pPila, W, BANKED
+0430  0D0B     MULLW 0xB
+0432  50F3     MOVF PRODL, W, ACCESS
+0434  6B89     CLRF 0x89, BANKED
+0436  6F88     MOVWF 0x88, BANKED
+0438  0E09     MOVLW 0x9
+043A  2588     ADDWF 0x88, W, BANKED
+043C  6E01     MOVWF 0x1, ACCESS
+043E  0E00     MOVLW 0x0
+0440  2189     ADDWFC 0x89, W, BANKED
+0442  6E03     MOVWF 0x3, ACCESS
+0444  5001     MOVF 0x1, W, ACCESS
+0446  0F17     ADDLW 0x17
+0448  6EE9     MOVWF FSR0L, ACCESS
+044A  0E00     MOVLW 0x0
+044C  2003     ADDWFC 0x3, W, ACCESS
+044E  6EEA     MOVWF FSR0H, ACCESS
+0450  CFE0     MOVFF BSR, INDF0
+165:           
+166:               desactivar_timer();
+0454  DF76     RCALL desactivar_timer
+167:               //output_toggle(PIN_A0);
+168:               //printf("q%i;", np);
+169:               //Función de corrimiento:
+170:               //printf("-t1;");
+171:               if (nCount > 0)
+0456  5379     MOVF nCount, F, BANKED
+0458  E077     BZ 0x548
+172:               {
+173:                   //printf("-q;");
+174:                   //Guardando la dirección actual://TOS (Top of Stack)--->PC
+175:           
+176:                   pList[pPila[0]].da = TOSL + (TOSH * 256) + (TOSU * 65536);
+045A  516F     MOVF pPila, W, BANKED
+045C  0D0B     MULLW 0xB
+045E  50F3     MOVF PRODL, W, ACCESS
+0460  6B89     CLRF 0x89, BANKED
+0462  6F88     MOVWF 0x88, BANKED
+0464  0E04     MOVLW 0x4
+0466  2588     ADDWF 0x88, W, BANKED
+0468  6E01     MOVWF 0x1, ACCESS
+046A  0E00     MOVLW 0x0
+046C  2189     ADDWFC 0x89, W, BANKED
+046E  6E03     MOVWF 0x3, ACCESS
+0470  5001     MOVF 0x1, W, ACCESS
+0472  0F17     ADDLW 0x17
+0474  6EE9     MOVWF FSR0L, ACCESS
+0476  0E00     MOVLW 0x0
+0478  2003     ADDWFC 0x3, W, ACCESS
+047A  6EEA     MOVWF FSR0H, ACCESS
+047C  6B8B     CLRF 0x8B, BANKED
+047E  CFFE     MOVFF TOSH, _invar6
+0482  0E01     MOVLW 0x1
+0484  6F8D     MOVWF 0x8D, BANKED
+0486  6B8C     CLRF _invar7, BANKED
+0488  D75E     BRA MUL1616
+048A  C002     MOVFF 0x2, 0x3
+048E  5001     MOVF 0x1, W, ACCESS
+0490  24FD     ADDWF TOSL, W, ACCESS
+0492  6F8A     MOVWF _invar6, BANKED
+0494  0E00     MOVLW 0x0
+0496  2002     ADDWFC 0x2, W, ACCESS
+0498  6F8B     MOVWF 0x8B, BANKED
+049A  CFEA     MOVFF FSR0H, 0x8D
+049E  CFE9     MOVFF FSR0L, _invar7
+04A2  6B91     CLRF 0x91, BANKED
+04A4  6B90     CLRF 0x90, BANKED
+04A6  6B8F     CLRF 0x8F, BANKED
+04A8  CFFF     MOVFF TOSU, _invar8
+04AC  6B95     CLRF TRISD, BANKED
+04AE  0E01     MOVLW 0x1
+04B0  6F94     MOVWF TRISC, BANKED
+04B2  6B93     CLRF TRISB, BANKED
+04B4  6B92     CLRF _invar9, BANKED
+04B6  D757     BRA MUL3232
+04B8  C08D     MOVFF 0x8D, FSR0H
+04BC  C08C     MOVFF _invar7, FSR0L
+04C0  5000     MOVF 0x0, W, ACCESS
+04C2  258A     ADDWF _invar6, W, BANKED
+04C4  6EEF     MOVWF INDF0, ACCESS
+04C6  5001     MOVF 0x1, W, ACCESS
+04C8  218B     ADDWFC 0x8B, W, BANKED
+04CA  6EEC     MOVWF PREINC0, ACCESS
+177:           
+178:                   pList[pPila[0]].estado = 2;
+04CC  516F     MOVF pPila, W, BANKED
+04CE  0D0B     MULLW 0xB
+04D0  50F3     MOVF PRODL, W, ACCESS
+04D2  6B89     CLRF 0x89, BANKED
+04D4  6F88     MOVWF 0x88, BANKED
+04D6  0E06     MOVLW 0x6
+04D8  2588     ADDWF 0x88, W, BANKED
+04DA  6E01     MOVWF 0x1, ACCESS
+04DC  0E00     MOVLW 0x0
+04DE  2189     ADDWFC 0x89, W, BANKED
+04E0  6E03     MOVWF 0x3, ACCESS
+04E2  5001     MOVF 0x1, W, ACCESS
+04E4  0F17     ADDLW 0x17
+04E6  6EE9     MOVWF FSR0L, ACCESS
+04E8  0E00     MOVLW 0x0
+04EA  2003     ADDWFC 0x3, W, ACCESS
+04EC  6EEA     MOVWF FSR0H, ACCESS
+04EE  0E02     MOVLW 0x2
+04F0  6EEF     MOVWF INDF0, ACCESS
+179:           
+180:                   /*pPila[nCount] = pPila[0];
+181:                   int ab;
+182:                   for(ab = 0; ab < nCount; ab++)
+183:                   {
+184:                       pPila[ab] = pPila[ab+1];
+185:                   }
+186:                    */
+187:                   int temp;
+188:                   temp = pPila[0];
+04F2  C06F     MOVFF pPila, temp
+189:                   int k;
+190:                   for (k = 0; k < (nCount - 1); k++)
+04F6  6B87     CLRF k, BANKED
+04F8  0E01     MOVLW 0x1
+04FA  5D79     SUBWF nCount, W, BANKED
+04FC  5D87     SUBWF k, W, BANKED
+04FE  E21A     BC 0x534
+191:                   {
+192:                       pPila[k] = pPila[k + 1];
+0500  6A03     CLRF 0x3, ACCESS
+0502  5187     MOVF k, W, BANKED
+0504  0F6F     ADDLW 0x6F
+0506  6E01     MOVWF 0x1, ACCESS
+0508  0E00     MOVLW 0x0
+050A  2203     ADDWFC 0x3, F, ACCESS
+050C  C003     MOVFF 0x3, 0x89
+0510  0E01     MOVLW 0x1
+0512  2587     ADDWF k, W, BANKED
+0514  6A03     CLRF 0x3, ACCESS
+0516  0F6F     ADDLW 0x6F
+0518  6EE9     MOVWF FSR0L, ACCESS
+051A  0E00     MOVLW 0x0
+051C  2003     ADDWFC 0x3, W, ACCESS
+051E  6EEA     MOVWF FSR0H, ACCESS
+0520  CFEF     MOVFF INDF0, _invar6
+0524  C089     MOVFF 0x89, FSR0H
+0528  C001     MOVFF 0x1, FSR0L
+052C  C08A     MOVFF _invar6, INDF0
+0530  2B87     INCF k, F, BANKED
+0532  D7E2     BRA 0x4F8
+193:                   }
+194:                   pPila[nCount - 1] = temp;
+0534  0E01     MOVLW 0x1
+0536  5D79     SUBWF nCount, W, BANKED
+0538  6A03     CLRF 0x3, ACCESS
+053A  0F6F     ADDLW 0x6F
+053C  6EE9     MOVWF FSR0L, ACCESS
+053E  0E00     MOVLW 0x0
+0540  2003     ADDWFC 0x3, W, ACCESS
+0542  6EEA     MOVWF FSR0H, ACCESS
+0544  C086     MOVFF temp, INDF0
+195:           
+196:           
+197:           
+198:               }
+199:               //output_toggle(PIN_D0);
+200:           #asm
+201:               clrf TOSL
+0548  6AFD     CLRF TOSL, ACCESS
+202:               movlw 0x40
+054A  0E40     MOVLW 0x40
+203:                       movwf TOSH
+054C  6EFE     MOVWF TOSH, ACCESS
+204:                       clrf TOSU
+054E  6AFF     CLRF TOSU, ACCESS
+205:           #endasm
+206:           }
+207:           
+0550  909E     BCF PIR1, 0, ACCESS
+0552  EF36     GOTO 0x6C
+208:           #INT_RDA
+209:           
+210:           void Data_ISR()
+211:           {
+212:               cmd = getc();
+0556  AA9E     BTFSS PIR1, 5, ACCESS
+0558  D7FE     BRA Data_ISR
+055A  CFAE     MOVFF RCREG, cmd
+213:               if (cmd == '+' || cmd == '-')
+055E  5177     MOVF cmd, W, BANKED
+0560  082B     SUBLW 0x2B
+0562  E003     BZ 0x56A
+0564  5177     MOVF cmd, W, BANKED
+0566  082D     SUBLW 0x2D
+0568  E103     BNZ 0x570
+214:               {
+215:                   speed = cmd;
+056A  C077     MOVFF cmd, speed
+216:                   cmd = 0x0;
+056E  6B77     CLRF cmd, BANKED
+217:               }
+218:               output_toggle(PIN_B7);
+0570  9E93     BCF TRISB, 7, ACCESS
+0572  7E8A     BTG LATB, 7, ACCESS
+219:           }
+220:           
+221:           //programa 1 (Luces)
+222:           
+223:           
+0574  9A9E     BCF PIR1, 5, ACCESS
+0576  EF36     GOTO 0x6C
+224:           #ORG 0x1000, 0x1350
+225:           
+226:           void Task1()
+227:           {
+228:           
+229:               long vk1, vl1;
+230:               while (1)
+231:               {
+232:                   output_low(PIN_C0);
+1000  9094     BCF TRISC, 0, ACCESS
+1002  908B     BCF LATC, 0, ACCESS
+233:                   output_low(PIN_D3);
+1004  9695     BCF TRISD, 3, ACCESS
+1006  968C     BCF LATD, 3, ACCESS
+234:                   output_low(PIN_A2);
+1008  9492     BCF TRISA, 2, ACCESS
+100A  9489     BCF LATA, 2, ACCESS
+235:                   output_low(PIN_A3);
+100C  9692     BCF TRISA, 3, ACCESS
+100E  9689     BCF LATA, 3, ACCESS
+236:                   for (vk1 = 1; vk1 < 600; ++vk1)
+1010  6B9D     CLRF process, BANKED
+1012  0E01     MOVLW 0x1
+1014  6F9C     MOVWF vk1, BANKED
+1016  519D     MOVF process, W, BANKED
+1018  0802     SUBLW 0x2
+101A  E316     BNC 0x1048
+101C  E103     BNZ 0x1024
+101E  519C     MOVF vk1, W, BANKED
+1020  0857     SUBLW 0x57
+1022  E312     BNC 0x1048
+237:                   {
+238:                       for (vl1 = 1; vl1 < 500; ++vl1)
+1024  6B9F     CLRF gol, BANKED
+1026  0E01     MOVLW 0x1
+1028  6F9E     MOVWF vl1, BANKED
+102A  519F     MOVF gol, W, BANKED
+102C  0801     SUBLW 0x1
+102E  E308     BNC 0x1040
+1030  E103     BNZ 0x1038
+1032  519E     MOVF vl1, W, BANKED
+1034  08F3     SUBLW 0xF3
+1036  E304     BNC 0x1040
+239:                       {
+1038  2B9E     INCF vl1, F, BANKED
+103A  B4D8     BTFSC STATUS, 2, ACCESS
+103C  2B9F     INCF gol, F, BANKED
+103E  D7F5     BRA 0x102A
+240:                       }
+1040  2B9C     INCF vk1, F, BANKED
+1042  B4D8     BTFSC STATUS, 2, ACCESS
+1044  2B9D     INCF process, F, BANKED
+1046  D7E7     BRA 0x1016
+241:                   }
+242:                   output_high(PIN_C0);
+1048  9094     BCF TRISC, 0, ACCESS
+104A  808B     BSF LATC, 0, ACCESS
+243:           
+244:                   for (vk1 = 1; vk1 < 600; ++vk1)
+104C  6B9D     CLRF process, BANKED
+104E  0E01     MOVLW 0x1
+1050  6F9C     MOVWF vk1, BANKED
+1052  519D     MOVF process, W, BANKED
+1054  0802     SUBLW 0x2
+1056  E316     BNC 0x1084
+1058  E103     BNZ 0x1060
+105A  519C     MOVF vk1, W, BANKED
+105C  0857     SUBLW 0x57
+105E  E312     BNC 0x1084
+245:                   {
+246:                       for (vl1 = 1; vl1 < 500; ++vl1)
+1060  6B9F     CLRF gol, BANKED
+1062  0E01     MOVLW 0x1
+1064  6F9E     MOVWF vl1, BANKED
+1066  519F     MOVF gol, W, BANKED
+1068  0801     SUBLW 0x1
+106A  E308     BNC 0x107C
+106C  E103     BNZ 0x1074
+106E  519E     MOVF vl1, W, BANKED
+1070  08F3     SUBLW 0xF3
+1072  E304     BNC 0x107C
+247:                       {
+1074  2B9E     INCF vl1, F, BANKED
+1076  B4D8     BTFSC STATUS, 2, ACCESS
+1078  2B9F     INCF gol, F, BANKED
+107A  D7F5     BRA 0x1066
+248:                       }
+107C  2B9C     INCF vk1, F, BANKED
+107E  B4D8     BTFSC STATUS, 2, ACCESS
+1080  2B9D     INCF process, F, BANKED
+1082  D7E7     BRA 0x1052
+249:                   }
+250:                   output_high(PIN_D3);
+1084  9695     BCF TRISD, 3, ACCESS
+1086  868C     BSF LATD, 3, ACCESS
+251:           
+252:                   for (vk1 = 1; vk1 < 600; ++vk1)
+1088  6B9D     CLRF process, BANKED
+108A  0E01     MOVLW 0x1
+108C  6F9C     MOVWF vk1, BANKED
+108E  519D     MOVF process, W, BANKED
+1090  0802     SUBLW 0x2
+1092  E316     BNC 0x10C0
+1094  E103     BNZ 0x109C
+1096  519C     MOVF vk1, W, BANKED
+1098  0857     SUBLW 0x57
+109A  E312     BNC 0x10C0
+253:                   {
+254:                       for (vl1 = 1; vl1 < 500; ++vl1)
+109C  6B9F     CLRF gol, BANKED
+109E  0E01     MOVLW 0x1
+10A0  6F9E     MOVWF vl1, BANKED
+10A2  519F     MOVF gol, W, BANKED
+10A4  0801     SUBLW 0x1
+10A6  E308     BNC 0x10B8
+10A8  E103     BNZ 0x10B0
+10AA  519E     MOVF vl1, W, BANKED
+10AC  08F3     SUBLW 0xF3
+10AE  E304     BNC 0x10B8
+255:                       {
+10B0  2B9E     INCF vl1, F, BANKED
+10B2  B4D8     BTFSC STATUS, 2, ACCESS
+10B4  2B9F     INCF gol, F, BANKED
+10B6  D7F5     BRA 0x10A2
+256:                       }
+10B8  2B9C     INCF vk1, F, BANKED
+10BA  B4D8     BTFSC STATUS, 2, ACCESS
+10BC  2B9D     INCF process, F, BANKED
+10BE  D7E7     BRA 0x108E
+257:                   }
+258:                   output_high(PIN_A2);
+10C0  9492     BCF TRISA, 2, ACCESS
+10C2  8489     BSF LATA, 2, ACCESS
+259:           
+260:                   for (vk1 = 1; vk1 < 600; ++vk1)
+10C4  6B9D     CLRF process, BANKED
+10C6  0E01     MOVLW 0x1
+10C8  6F9C     MOVWF vk1, BANKED
+10CA  519D     MOVF process, W, BANKED
+10CC  0802     SUBLW 0x2
+10CE  E316     BNC 0x10FC
+10D0  E103     BNZ 0x10D8
+10D2  519C     MOVF vk1, W, BANKED
+10D4  0857     SUBLW 0x57
+10D6  E312     BNC 0x10FC
+261:                   {
+262:                       for (vl1 = 1; vl1 < 500; ++vl1)
+10D8  6B9F     CLRF gol, BANKED
+10DA  0E01     MOVLW 0x1
+10DC  6F9E     MOVWF vl1, BANKED
+10DE  519F     MOVF gol, W, BANKED
+10E0  0801     SUBLW 0x1
+10E2  E308     BNC 0x10F4
+10E4  E103     BNZ 0x10EC
+10E6  519E     MOVF vl1, W, BANKED
+10E8  08F3     SUBLW 0xF3
+10EA  E304     BNC 0x10F4
+263:                       {
+10EC  2B9E     INCF vl1, F, BANKED
+10EE  B4D8     BTFSC STATUS, 2, ACCESS
+10F0  2B9F     INCF gol, F, BANKED
+10F2  D7F5     BRA 0x10DE
+264:                       }
+10F4  2B9C     INCF vk1, F, BANKED
+10F6  B4D8     BTFSC STATUS, 2, ACCESS
+10F8  2B9D     INCF process, F, BANKED
+10FA  D7E7     BRA 0x10CA
+265:                   }
+266:                   output_high(PIN_A3);
+10FC  9692     BCF TRISA, 3, ACCESS
+10FE  8689     BSF LATA, 3, ACCESS
+267:           
+268:                   for (vk1 = 1; vk1 < 600; ++vk1)
+1100  6B9D     CLRF process, BANKED
+1102  0E01     MOVLW 0x1
+1104  6F9C     MOVWF vk1, BANKED
+1106  519D     MOVF process, W, BANKED
+1108  0802     SUBLW 0x2
+110A  E316     BNC 0x1138
+110C  E103     BNZ 0x1114
+110E  519C     MOVF vk1, W, BANKED
+1110  0857     SUBLW 0x57
+1112  E312     BNC 0x1138
+269:                   {
+270:                       for (vl1 = 1; vl1 < 500; ++vl1)
+1114  6B9F     CLRF gol, BANKED
+1116  0E01     MOVLW 0x1
+1118  6F9E     MOVWF vl1, BANKED
+111A  519F     MOVF gol, W, BANKED
+111C  0801     SUBLW 0x1
+111E  E308     BNC 0x1130
+1120  E103     BNZ 0x1128
+1122  519E     MOVF vl1, W, BANKED
+1124  08F3     SUBLW 0xF3
+1126  E304     BNC 0x1130
+271:                       {
+1128  2B9E     INCF vl1, F, BANKED
+112A  B4D8     BTFSC STATUS, 2, ACCESS
+112C  2B9F     INCF gol, F, BANKED
+112E  D7F5     BRA 0x111A
+272:                       }
+1130  2B9C     INCF vk1, F, BANKED
+1132  B4D8     BTFSC STATUS, 2, ACCESS
+1134  2B9D     INCF process, F, BANKED
+1136  D7E7     BRA 0x1106
+273:                   }
+274:                   output_low(PIN_A3);
+1138  9692     BCF TRISA, 3, ACCESS
+113A  9689     BCF LATA, 3, ACCESS
+275:           
+276:                   for (vk1 = 1; vk1 < 600; ++vk1)
+113C  6B9D     CLRF process, BANKED
+113E  0E01     MOVLW 0x1
+1140  6F9C     MOVWF vk1, BANKED
+1142  519D     MOVF process, W, BANKED
+1144  0802     SUBLW 0x2
+1146  E316     BNC 0x1174
+1148  E103     BNZ 0x1150
+114A  519C     MOVF vk1, W, BANKED
+114C  0857     SUBLW 0x57
+114E  E312     BNC 0x1174
+277:                   {
+278:                       for (vl1 = 1; vl1 < 500; ++vl1)
+1150  6B9F     CLRF gol, BANKED
+1152  0E01     MOVLW 0x1
+1154  6F9E     MOVWF vl1, BANKED
+1156  519F     MOVF gol, W, BANKED
+1158  0801     SUBLW 0x1
+115A  E308     BNC 0x116C
+115C  E103     BNZ 0x1164
+115E  519E     MOVF vl1, W, BANKED
+1160  08F3     SUBLW 0xF3
+1162  E304     BNC 0x116C
+279:                       {
+1164  2B9E     INCF vl1, F, BANKED
+1166  B4D8     BTFSC STATUS, 2, ACCESS
+1168  2B9F     INCF gol, F, BANKED
+116A  D7F5     BRA 0x1156
+280:                       }
+116C  2B9C     INCF vk1, F, BANKED
+116E  B4D8     BTFSC STATUS, 2, ACCESS
+1170  2B9D     INCF process, F, BANKED
+1172  D7E7     BRA 0x1142
+281:                   }
+282:                   output_low(PIN_A2);
+1174  9492     BCF TRISA, 2, ACCESS
+1176  9489     BCF LATA, 2, ACCESS
+283:           
+284:                   for (vk1 = 1; vk1 < 600; ++vk1)
+1178  6B9D     CLRF process, BANKED
+117A  0E01     MOVLW 0x1
+117C  6F9C     MOVWF vk1, BANKED
+117E  519D     MOVF process, W, BANKED
+1180  0802     SUBLW 0x2
+1182  E316     BNC 0x11B0
+1184  E103     BNZ 0x118C
+1186  519C     MOVF vk1, W, BANKED
+1188  0857     SUBLW 0x57
+118A  E312     BNC 0x11B0
+285:                   {
+286:                       for (vl1 = 1; vl1 < 500; ++vl1)
+118C  6B9F     CLRF gol, BANKED
+118E  0E01     MOVLW 0x1
+1190  6F9E     MOVWF vl1, BANKED
+1192  519F     MOVF gol, W, BANKED
+1194  0801     SUBLW 0x1
+1196  E308     BNC 0x11A8
+1198  E103     BNZ 0x11A0
+119A  519E     MOVF vl1, W, BANKED
+119C  08F3     SUBLW 0xF3
+119E  E304     BNC 0x11A8
+287:                       {
+11A0  2B9E     INCF vl1, F, BANKED
+11A2  B4D8     BTFSC STATUS, 2, ACCESS
+11A4  2B9F     INCF gol, F, BANKED
+11A6  D7F5     BRA 0x1192
+288:                       }
+11A8  2B9C     INCF vk1, F, BANKED
+11AA  B4D8     BTFSC STATUS, 2, ACCESS
+11AC  2B9D     INCF process, F, BANKED
+11AE  D7E7     BRA 0x117E
+289:                   }
+290:                   output_low(PIN_D3);
+11B0  9695     BCF TRISD, 3, ACCESS
+11B2  968C     BCF LATD, 3, ACCESS
+291:           
+292:                   for (vk1 = 1; vk1 < 600; ++vk1)
+11B4  6B9D     CLRF process, BANKED
+11B6  0E01     MOVLW 0x1
+11B8  6F9C     MOVWF vk1, BANKED
+11BA  519D     MOVF process, W, BANKED
+11BC  0802     SUBLW 0x2
+11BE  E316     BNC 0x11EC
+11C0  E103     BNZ 0x11C8
+11C2  519C     MOVF vk1, W, BANKED
+11C4  0857     SUBLW 0x57
+11C6  E312     BNC 0x11EC
+293:                   {
+294:                       for (vl1 = 1; vl1 < 500; ++vl1)
+11C8  6B9F     CLRF gol, BANKED
+11CA  0E01     MOVLW 0x1
+11CC  6F9E     MOVWF vl1, BANKED
+11CE  519F     MOVF gol, W, BANKED
+11D0  0801     SUBLW 0x1
+11D2  E308     BNC 0x11E4
+11D4  E103     BNZ 0x11DC
+11D6  519E     MOVF vl1, W, BANKED
+11D8  08F3     SUBLW 0xF3
+11DA  E304     BNC 0x11E4
+295:                       {
+11DC  2B9E     INCF vl1, F, BANKED
+11DE  B4D8     BTFSC STATUS, 2, ACCESS
+11E0  2B9F     INCF gol, F, BANKED
+11E2  D7F5     BRA 0x11CE
+296:                       }
+11E4  2B9C     INCF vk1, F, BANKED
+11E6  B4D8     BTFSC STATUS, 2, ACCESS
+11E8  2B9D     INCF process, F, BANKED
+11EA  D7E7     BRA 0x11BA
+297:                   }
+11EC  D709     BRA Task1
+298:           
+299:           
+300:               }
+11EE  0012     RETURN 0
+301:           
+302:           }
+303:           
+304:           
+305:           #ORG 0x1352, 0x2000
+306:           
+307:           void Task2()
+308:           {
+309:               long t21, t22, t23;
+310:               //int tabla[10] = {63, 6, 91, 79, 102, 109, 125, 7, 127, 103};
+311:               //int m1, k1, l1;
+312:               do
+313:               {
+314:           
+315:           
+316:                   /*for (t23 = 9; t23 >= 0; t23--)
+317:                   {
+318:                       output_b(tabla[t23]);
+319:                       //printf("-2: %i;", t23);
+320:                       for (t21 = 0; t21 < 400; ++t21)
+321:                       {
+322:                           for (t22 = 0; t22 < 200; ++t22)
+323:                           {
+324:                           }
+325:                           
+326:                       }
+327:                   }*/
+328:           
+329:                   output_b(~103);
+1352  6A93     CLRF TRISB, ACCESS
+1354  0E98     MOVLW 0x98
+1356  6E8A     MOVWF LATB, ACCESS
+330:                   printf("-2: 9;");
+1358  0E9C     MOVLW 0x9C
+135A  6EF6     MOVWF TBLPTRL, ACCESS
+135C  0E05     MOVLW 0x5
+135E  6EF7     MOVWF TBLPTRH, ACCESS
+1360  ECBD     CALL 0x57A, 0
+331:                   for (t21 = 0; t21 < 600; ++t21)
+1364  6B9D     CLRF process, BANKED
+1366  6B9C     CLRF vk1, BANKED
+1368  519D     MOVF process, W, BANKED
+136A  0802     SUBLW 0x2
+136C  E315     BNC 0x1398
+136E  E103     BNZ 0x1376
+1370  519C     MOVF vk1, W, BANKED
+1372  0857     SUBLW 0x57
+1374  E311     BNC 0x1398
+332:                   {
+333:                       for (t22 = 0; t22 < 500; ++t22)
+1376  6B9F     CLRF gol, BANKED
+1378  6B9E     CLRF vl1, BANKED
+137A  519F     MOVF gol, W, BANKED
+137C  0801     SUBLW 0x1
+137E  E308     BNC 0x1390
+1380  E103     BNZ 0x1388
+1382  519E     MOVF vl1, W, BANKED
+1384  08F3     SUBLW 0xF3
+1386  E304     BNC 0x1390
+334:                       {
+1388  2B9E     INCF vl1, F, BANKED
+138A  B4D8     BTFSC STATUS, 2, ACCESS
+138C  2B9F     INCF gol, F, BANKED
+138E  D7F5     BRA 0x137A
+335:                       }
+1390  2B9C     INCF vk1, F, BANKED
+1392  B4D8     BTFSC STATUS, 2, ACCESS
+1394  2B9D     INCF process, F, BANKED
+1396  D7E8     BRA 0x1368
+336:           
+337:                   }
+338:                   output_b(~127);
+1398  6A93     CLRF TRISB, ACCESS
+139A  0E80     MOVLW 0x80
+139C  6E8A     MOVWF LATB, ACCESS
+339:                   printf("-2: 8;");
+139E  0EA4     MOVLW 0xA4
+13A0  6EF6     MOVWF TBLPTRL, ACCESS
+13A2  0E05     MOVLW 0x5
+13A4  6EF7     MOVWF TBLPTRH, ACCESS
+13A6  ECBD     CALL 0x57A, 0
+340:                   for (t21 = 0; t21 < 600; ++t21)
+13AA  6B9D     CLRF process, BANKED
+13AC  6B9C     CLRF vk1, BANKED
+13AE  519D     MOVF process, W, BANKED
+13B0  0802     SUBLW 0x2
+13B2  E315     BNC 0x13DE
+13B4  E103     BNZ 0x13BC
+13B6  519C     MOVF vk1, W, BANKED
+13B8  0857     SUBLW 0x57
+13BA  E311     BNC 0x13DE
+341:                   {
+342:                       for (t22 = 0; t22 < 500; ++t22)
+13BC  6B9F     CLRF gol, BANKED
+13BE  6B9E     CLRF vl1, BANKED
+13C0  519F     MOVF gol, W, BANKED
+13C2  0801     SUBLW 0x1
+13C4  E308     BNC 0x13D6
+13C6  E103     BNZ 0x13CE
+13C8  519E     MOVF vl1, W, BANKED
+13CA  08F3     SUBLW 0xF3
+13CC  E304     BNC 0x13D6
+343:                       {
+13CE  2B9E     INCF vl1, F, BANKED
+13D0  B4D8     BTFSC STATUS, 2, ACCESS
+13D2  2B9F     INCF gol, F, BANKED
+13D4  D7F5     BRA 0x13C0
+344:                       }
+13D6  2B9C     INCF vk1, F, BANKED
+13D8  B4D8     BTFSC STATUS, 2, ACCESS
+13DA  2B9D     INCF process, F, BANKED
+13DC  D7E8     BRA 0x13AE
+345:           
+346:                   }
+347:                   output_b(~7);
+13DE  6A93     CLRF TRISB, ACCESS
+13E0  0EF8     MOVLW 0xF8
+13E2  6E8A     MOVWF LATB, ACCESS
+348:                   printf("-2: 7;");
+13E4  0EAC     MOVLW 0xAC
+13E6  6EF6     MOVWF TBLPTRL, ACCESS
+13E8  0E05     MOVLW 0x5
+13EA  6EF7     MOVWF TBLPTRH, ACCESS
+13EC  ECBD     CALL 0x57A, 0
+349:                   for (t21 = 0; t21 < 600; ++t21)
+13F0  6B9D     CLRF process, BANKED
+13F2  6B9C     CLRF vk1, BANKED
+13F4  519D     MOVF process, W, BANKED
+13F6  0802     SUBLW 0x2
+13F8  E315     BNC 0x1424
+13FA  E103     BNZ 0x1402
+13FC  519C     MOVF vk1, W, BANKED
+13FE  0857     SUBLW 0x57
+1400  E311     BNC 0x1424
+350:                   {
+351:                       for (t22 = 0; t22 < 500; ++t22)
+1402  6B9F     CLRF gol, BANKED
+1404  6B9E     CLRF vl1, BANKED
+1406  519F     MOVF gol, W, BANKED
+1408  0801     SUBLW 0x1
+140A  E308     BNC 0x141C
+140C  E103     BNZ 0x1414
+140E  519E     MOVF vl1, W, BANKED
+1410  08F3     SUBLW 0xF3
+1412  E304     BNC 0x141C
+352:                       {
+1414  2B9E     INCF vl1, F, BANKED
+1416  B4D8     BTFSC STATUS, 2, ACCESS
+1418  2B9F     INCF gol, F, BANKED
+141A  D7F5     BRA 0x1406
+353:                       }
+141C  2B9C     INCF vk1, F, BANKED
+141E  B4D8     BTFSC STATUS, 2, ACCESS
+1420  2B9D     INCF process, F, BANKED
+1422  D7E8     BRA 0x13F4
+354:           
+355:                   }
+356:                   output_b(~125);
+1424  6A93     CLRF TRISB, ACCESS
+1426  0E82     MOVLW 0x82
+1428  6E8A     MOVWF LATB, ACCESS
+357:                   printf("-2: 6;");
+142A  0EB4     MOVLW 0xB4
+142C  6EF6     MOVWF TBLPTRL, ACCESS
+142E  0E05     MOVLW 0x5
+1430  6EF7     MOVWF TBLPTRH, ACCESS
+1432  ECBD     CALL 0x57A, 0
+358:                   for (t21 = 0; t21 < 600; ++t21)
+1436  6B9D     CLRF process, BANKED
+1438  6B9C     CLRF vk1, BANKED
+143A  519D     MOVF process, W, BANKED
+143C  0802     SUBLW 0x2
+143E  E315     BNC 0x146A
+1440  E103     BNZ 0x1448
+1442  519C     MOVF vk1, W, BANKED
+1444  0857     SUBLW 0x57
+1446  E311     BNC 0x146A
+359:                   {
+360:                       for (t22 = 0; t22 < 500; ++t22)
+1448  6B9F     CLRF gol, BANKED
+144A  6B9E     CLRF vl1, BANKED
+144C  519F     MOVF gol, W, BANKED
+144E  0801     SUBLW 0x1
+1450  E308     BNC 0x1462
+1452  E103     BNZ 0x145A
+1454  519E     MOVF vl1, W, BANKED
+1456  08F3     SUBLW 0xF3
+1458  E304     BNC 0x1462
+361:                       {
+145A  2B9E     INCF vl1, F, BANKED
+145C  B4D8     BTFSC STATUS, 2, ACCESS
+145E  2B9F     INCF gol, F, BANKED
+1460  D7F5     BRA 0x144C
+362:                       }
+1462  2B9C     INCF vk1, F, BANKED
+1464  B4D8     BTFSC STATUS, 2, ACCESS
+1466  2B9D     INCF process, F, BANKED
+1468  D7E8     BRA 0x143A
+363:           
+364:                   }
+365:                   output_b(~109);
+146A  6A93     CLRF TRISB, ACCESS
+146C  0E92     MOVLW 0x92
+146E  6E8A     MOVWF LATB, ACCESS
+366:                   printf("-2: 5;");
+1470  0EBC     MOVLW 0xBC
+1472  6EF6     MOVWF TBLPTRL, ACCESS
+1474  0E05     MOVLW 0x5
+1476  6EF7     MOVWF TBLPTRH, ACCESS
+1478  ECBD     CALL 0x57A, 0
+367:                   for (t21 = 0; t21 < 600; ++t21)
+147C  6B9D     CLRF process, BANKED
+147E  6B9C     CLRF vk1, BANKED
+1480  519D     MOVF process, W, BANKED
+1482  0802     SUBLW 0x2
+1484  E315     BNC 0x14B0
+1486  E103     BNZ 0x148E
+1488  519C     MOVF vk1, W, BANKED
+148A  0857     SUBLW 0x57
+148C  E311     BNC 0x14B0
+368:                   {
+369:                       for (t22 = 0; t22 < 500; ++t22)
+148E  6B9F     CLRF gol, BANKED
+1490  6B9E     CLRF vl1, BANKED
+1492  519F     MOVF gol, W, BANKED
+1494  0801     SUBLW 0x1
+1496  E308     BNC 0x14A8
+1498  E103     BNZ 0x14A0
+149A  519E     MOVF vl1, W, BANKED
+149C  08F3     SUBLW 0xF3
+149E  E304     BNC 0x14A8
+370:                       {
+14A0  2B9E     INCF vl1, F, BANKED
+14A2  B4D8     BTFSC STATUS, 2, ACCESS
+14A4  2B9F     INCF gol, F, BANKED
+14A6  D7F5     BRA 0x1492
+371:                       }
+14A8  2B9C     INCF vk1, F, BANKED
+14AA  B4D8     BTFSC STATUS, 2, ACCESS
+14AC  2B9D     INCF process, F, BANKED
+14AE  D7E8     BRA 0x1480
+372:           
+373:                   }
+374:                   output_b(~102);
+14B0  6A93     CLRF TRISB, ACCESS
+14B2  0E99     MOVLW 0x99
+14B4  6E8A     MOVWF LATB, ACCESS
+375:                   printf("-2: 4;");
+14B6  0EC4     MOVLW 0xC4
+14B8  6EF6     MOVWF TBLPTRL, ACCESS
+14BA  0E05     MOVLW 0x5
+14BC  6EF7     MOVWF TBLPTRH, ACCESS
+14BE  ECBD     CALL 0x57A, 0
+376:                   for (t21 = 0; t21 < 600; ++t21)
+14C2  6B9D     CLRF process, BANKED
+14C4  6B9C     CLRF vk1, BANKED
+14C6  519D     MOVF process, W, BANKED
+14C8  0802     SUBLW 0x2
+14CA  E315     BNC 0x14F6
+14CC  E103     BNZ 0x14D4
+14CE  519C     MOVF vk1, W, BANKED
+14D0  0857     SUBLW 0x57
+14D2  E311     BNC 0x14F6
+377:                   {
+378:                       for (t22 = 0; t22 < 500; ++t22)
+14D4  6B9F     CLRF gol, BANKED
+14D6  6B9E     CLRF vl1, BANKED
+14D8  519F     MOVF gol, W, BANKED
+14DA  0801     SUBLW 0x1
+14DC  E308     BNC 0x14EE
+14DE  E103     BNZ 0x14E6
+14E0  519E     MOVF vl1, W, BANKED
+14E2  08F3     SUBLW 0xF3
+14E4  E304     BNC 0x14EE
+379:                       {
+14E6  2B9E     INCF vl1, F, BANKED
+14E8  B4D8     BTFSC STATUS, 2, ACCESS
+14EA  2B9F     INCF gol, F, BANKED
+14EC  D7F5     BRA 0x14D8
+380:                       }
+14EE  2B9C     INCF vk1, F, BANKED
+14F0  B4D8     BTFSC STATUS, 2, ACCESS
+14F2  2B9D     INCF process, F, BANKED
+14F4  D7E8     BRA 0x14C6
+381:           
+382:                   }
+383:                   output_b(~79);
+14F6  6A93     CLRF TRISB, ACCESS
+14F8  0EB0     MOVLW 0xB0
+14FA  6E8A     MOVWF LATB, ACCESS
+384:                   printf("-2: 3;");
+14FC  0ECC     MOVLW 0xCC
+14FE  6EF6     MOVWF TBLPTRL, ACCESS
+1500  0E05     MOVLW 0x5
+1502  6EF7     MOVWF TBLPTRH, ACCESS
+1504  ECBD     CALL 0x57A, 0
+385:                   for (t21 = 0; t21 < 600; ++t21)
+1508  6B9D     CLRF process, BANKED
+150A  6B9C     CLRF vk1, BANKED
+150C  519D     MOVF process, W, BANKED
+150E  0802     SUBLW 0x2
+1510  E315     BNC 0x153C
+1512  E103     BNZ 0x151A
+1514  519C     MOVF vk1, W, BANKED
+1516  0857     SUBLW 0x57
+1518  E311     BNC 0x153C
+386:                   {
+387:                       for (t22 = 0; t22 < 500; ++t22)
+151A  6B9F     CLRF gol, BANKED
+151C  6B9E     CLRF vl1, BANKED
+151E  519F     MOVF gol, W, BANKED
+1520  0801     SUBLW 0x1
+1522  E308     BNC 0x1534
+1524  E103     BNZ 0x152C
+1526  519E     MOVF vl1, W, BANKED
+1528  08F3     SUBLW 0xF3
+152A  E304     BNC 0x1534
+388:                       {
+152C  2B9E     INCF vl1, F, BANKED
+152E  B4D8     BTFSC STATUS, 2, ACCESS
+1530  2B9F     INCF gol, F, BANKED
+1532  D7F5     BRA 0x151E
+389:                       }
+1534  2B9C     INCF vk1, F, BANKED
+1536  B4D8     BTFSC STATUS, 2, ACCESS
+1538  2B9D     INCF process, F, BANKED
+153A  D7E8     BRA 0x150C
+390:           
+391:                   }
+392:                   output_b(~91);
+153C  6A93     CLRF TRISB, ACCESS
+153E  0EA4     MOVLW 0xA4
+1540  6E8A     MOVWF LATB, ACCESS
+393:                   printf("-2: 2;");
+1542  0ED4     MOVLW 0xD4
+1544  6EF6     MOVWF TBLPTRL, ACCESS
+1546  0E05     MOVLW 0x5
+1548  6EF7     MOVWF TBLPTRH, ACCESS
+154A  ECBD     CALL 0x57A, 0
+394:                   for (t21 = 0; t21 < 600; ++t21)
+154E  6B9D     CLRF process, BANKED
+1550  6B9C     CLRF vk1, BANKED
+1552  519D     MOVF process, W, BANKED
+1554  0802     SUBLW 0x2
+1556  E315     BNC 0x1582
+1558  E103     BNZ 0x1560
+155A  519C     MOVF vk1, W, BANKED
+155C  0857     SUBLW 0x57
+155E  E311     BNC 0x1582
+395:                   {
+396:                       for (t22 = 0; t22 < 500; ++t22)
+1560  6B9F     CLRF gol, BANKED
+1562  6B9E     CLRF vl1, BANKED
+1564  519F     MOVF gol, W, BANKED
+1566  0801     SUBLW 0x1
+1568  E308     BNC 0x157A
+156A  E103     BNZ 0x1572
+156C  519E     MOVF vl1, W, BANKED
+156E  08F3     SUBLW 0xF3
+1570  E304     BNC 0x157A
+397:                       {
+1572  2B9E     INCF vl1, F, BANKED
+1574  B4D8     BTFSC STATUS, 2, ACCESS
+1576  2B9F     INCF gol, F, BANKED
+1578  D7F5     BRA 0x1564
+398:                       }
+157A  2B9C     INCF vk1, F, BANKED
+157C  B4D8     BTFSC STATUS, 2, ACCESS
+157E  2B9D     INCF process, F, BANKED
+1580  D7E8     BRA 0x1552
+399:           
+400:                   }
+401:                   output_b(~6);
+1582  6A93     CLRF TRISB, ACCESS
+1584  0EF9     MOVLW 0xF9
+1586  6E8A     MOVWF LATB, ACCESS
+402:                   printf("-2: 1;");
+1588  0EDC     MOVLW 0xDC
+158A  6EF6     MOVWF TBLPTRL, ACCESS
+158C  0E05     MOVLW 0x5
+158E  6EF7     MOVWF TBLPTRH, ACCESS
+1590  ECBD     CALL 0x57A, 0
+403:                   for (t21 = 0; t21 < 600; ++t21)
+1594  6B9D     CLRF process, BANKED
+1596  6B9C     CLRF vk1, BANKED
+1598  519D     MOVF process, W, BANKED
+159A  0802     SUBLW 0x2
+159C  E315     BNC 0x15C8
+159E  E103     BNZ 0x15A6
+15A0  519C     MOVF vk1, W, BANKED
+15A2  0857     SUBLW 0x57
+15A4  E311     BNC 0x15C8
+404:                   {
+405:                       for (t22 = 0; t22 < 500; ++t22)
+15A6  6B9F     CLRF gol, BANKED
+15A8  6B9E     CLRF vl1, BANKED
+15AA  519F     MOVF gol, W, BANKED
+15AC  0801     SUBLW 0x1
+15AE  E308     BNC 0x15C0
+15B0  E103     BNZ 0x15B8
+15B2  519E     MOVF vl1, W, BANKED
+15B4  08F3     SUBLW 0xF3
+15B6  E304     BNC 0x15C0
+406:                       {
+15B8  2B9E     INCF vl1, F, BANKED
+15BA  B4D8     BTFSC STATUS, 2, ACCESS
+15BC  2B9F     INCF gol, F, BANKED
+15BE  D7F5     BRA 0x15AA
+407:                       }
+15C0  2B9C     INCF vk1, F, BANKED
+15C2  B4D8     BTFSC STATUS, 2, ACCESS
+15C4  2B9D     INCF process, F, BANKED
+15C6  D7E8     BRA 0x1598
+408:           
+409:                   }
+410:                   output_b(~63);
+15C8  6A93     CLRF TRISB, ACCESS
+15CA  0EC0     MOVLW 0xC0
+15CC  6E8A     MOVWF LATB, ACCESS
+411:                   printf("-2: 0;");
+15CE  0EE4     MOVLW 0xE4
+15D0  6EF6     MOVWF TBLPTRL, ACCESS
+15D2  0E05     MOVLW 0x5
+15D4  6EF7     MOVWF TBLPTRH, ACCESS
+15D6  ECBD     CALL 0x57A, 0
+412:                   for (t21 = 0; t21 < 600; ++t21)
+15DA  6B9D     CLRF process, BANKED
+15DC  6B9C     CLRF vk1, BANKED
+15DE  519D     MOVF process, W, BANKED
+15E0  0802     SUBLW 0x2
+15E2  E315     BNC 0x160E
+15E4  E103     BNZ 0x15EC
+15E6  519C     MOVF vk1, W, BANKED
+15E8  0857     SUBLW 0x57
+15EA  E311     BNC 0x160E
+413:                   {
+414:                       for (t22 = 0; t22 < 500; ++t22)
+15EC  6B9F     CLRF gol, BANKED
+15EE  6B9E     CLRF vl1, BANKED
+15F0  519F     MOVF gol, W, BANKED
+15F2  0801     SUBLW 0x1
+15F4  E308     BNC 0x1606
+15F6  E103     BNZ 0x15FE
+15F8  519E     MOVF vl1, W, BANKED
+15FA  08F3     SUBLW 0xF3
+15FC  E304     BNC 0x1606
+415:                       {
+15FE  2B9E     INCF vl1, F, BANKED
+1600  B4D8     BTFSC STATUS, 2, ACCESS
+1602  2B9F     INCF gol, F, BANKED
+1604  D7F5     BRA 0x15F0
+416:                       }
+1606  2B9C     INCF vk1, F, BANKED
+1608  B4D8     BTFSC STATUS, 2, ACCESS
+160A  2B9D     INCF process, F, BANKED
+160C  D7E8     BRA 0x15DE
+417:           
+418:                   }
+419:           
+420:           
+421:               }
+422:               while (1);
+160E  D6A1     BRA Task2
+1610  0012     RETURN 0
+423:           
+424:           
+425:           
+426:           
+427:           }
+428:           
+429:           
+430:           //programa 3 (Control de velocidad de un motor)
+431:           #ORG 0x2010, 0x2500
+432:           
+433:           void Task3()
+434:           {
+435:               //long t2, t3;
+436:               while (1)
+437:               {
+438:                   //for (k1 = 1; k1 < 200; ++k1){ for (l1 = 1; l1 < 200; ++l1){} }
+439:                   /*if (input(PIN_C0) == 0 && input(PIN_C1) == 0){
+440:                      CCPR1L = 0x00;
+441:                      CCP5 = 0;
+442:                      CCP4 = 0;
+443:                   }
+444:                   if (input(PIN_C0) == 1 && input(PIN_C1) == 1)
+445:                   {//1020
+446:                    */
+447:                   if (speed == '-')
+2010  5178     MOVF speed, W, BANKED
+2012  082D     SUBLW 0x2D
+2014  E104     BNZ 0x201E
+448:                   {
+449:                      
+450:           
+451:                       CCPR1L = 0xAA; //
+2016  0EAA     MOVLW 0xAA
+2018  6EBE     MOVWF CCPR1L, ACCESS
+452:                       CCP5 = 1;
+201A  8ABD     BSF CCP1CON, 5, ACCESS
+453:                       CCP4 = 0;
+201C  98BD     BCF CCP1CON, 4, ACCESS
+454:                       /*for (t2 = 1; t2 < 100; ++t2)
+455:                       {
+456:                           for (t3 = 1; t3 < 50; ++t3)
+457:                           {
+458:                           }
+459:                       }*/
+460:                   }
+461:                  
+462:                   if (speed == '+')
+201E  5178     MOVF speed, W, BANKED
+2020  082B     SUBLW 0x2B
+2022  E104     BNZ 0x202C
+463:                   {
+464:                       CCPR1L = 0x55;
+2024  0E55     MOVLW 0x55
+2026  6EBE     MOVWF CCPR1L, ACCESS
+465:                      CCP5 = 0;
+2028  9ABD     BCF CCP1CON, 5, ACCESS
+466:                      CCP4 = 1;
+202A  88BD     BSF CCP1CON, 4, ACCESS
+467:                       /*for (t2 = 1; t2 < 100; ++t2)
+468:                       {
+469:                           for (t3 = 1; t3 < 50; ++t3)
+470:                           {
+471:                           }
+472:                       }*/
+473:                   }
+202C  D7F1     BRA Task3
+474:                   //
+475:                   /*}
+476:                   if (input(PIN_C0) == 0 && input(PIN_C1) == 1)
+477:                   {
+478:                      //682
+479:                      CCPR1L = 0xAA;//
+480:                      CCP5 = 1;
+481:                      CCP4 = 0;
+482:                   }
+483:                   if (input(PIN_C0) == 1 && input(PIN_C1) == 0)
+484:                   {//341
+485:                      CCPR1L = 0x55;
+486:                      CCP5 = 0;
+487:                      CCP4 = 1;
+488:                   }*/
+489:               }
+202E  0012     RETURN 0
+490:           }
+491:           
+492:           
+493:           
+494:           // pROG 6
+495:           #ORG 0x2510, 0x3000
+496:           
+497:           void Task4(void)
+498:           {
+499:               /*while (1){
+500:                  if (RCIF == 0X01){//Lectura del flag
+501:                     cmd = getc();
+502:           
+503:                     //if (n=='l'&&(PIR1.5==1)){
+504:                     if (cmd == 'l'){
+505:                        read = 1;
+506:                     }
+507:                     RCIF = 0X00; //Borrado de bandera
+508:                  }
+509:               }*/
+510:           
+511:               long vk1, vl1;
+512:               while (1)
+513:               {
+514:                   output_high(PIN_D1);
+2510  9295     BCF TRISD, 1, ACCESS
+2512  828C     BSF LATD, 1, ACCESS
+515:                   output_high(PIN_D2);
+2514  9495     BCF TRISD, 2, ACCESS
+2516  848C     BSF LATD, 2, ACCESS
+516:           
+517:                   output_low(PIN_D4);
+2518  9895     BCF TRISD, 4, ACCESS
+251A  988C     BCF LATD, 4, ACCESS
+518:                   output_low(PIN_D5);
+251C  9A95     BCF TRISD, 5, ACCESS
+251E  9A8C     BCF LATD, 5, ACCESS
+519:           
+520:                   output_low(PIN_D6);
+2520  9C95     BCF TRISD, 6, ACCESS
+2522  9C8C     BCF LATD, 6, ACCESS
+521:                   output_low(PIN_D7);
+2524  9E95     BCF TRISD, 7, ACCESS
+2526  9E8C     BCF LATD, 7, ACCESS
+522:           
+523:                   for (vk1 = 1; vk1 < 300; ++vk1)
+2528  6B9D     CLRF process, BANKED
+252A  0E01     MOVLW 0x1
+252C  6F9C     MOVWF vk1, BANKED
+252E  519D     MOVF process, W, BANKED
+2530  0801     SUBLW 0x1
+2532  E316     BNC 0x2560
+2534  E103     BNZ 0x253C
+2536  519C     MOVF vk1, W, BANKED
+2538  082B     SUBLW 0x2B
+253A  E312     BNC 0x2560
+524:                   {
+525:                       for (vl1 = 1; vl1 < 500; ++vl1)
+253C  6B9F     CLRF gol, BANKED
+253E  0E01     MOVLW 0x1
+2540  6F9E     MOVWF vl1, BANKED
+2542  519F     MOVF gol, W, BANKED
+2544  0801     SUBLW 0x1
+2546  E308     BNC 0x2558
+2548  E103     BNZ 0x2550
+254A  519E     MOVF vl1, W, BANKED
+254C  08F3     SUBLW 0xF3
+254E  E304     BNC 0x2558
+526:                       {
+2550  2B9E     INCF vl1, F, BANKED
+2552  B4D8     BTFSC STATUS, 2, ACCESS
+2554  2B9F     INCF gol, F, BANKED
+2556  D7F5     BRA 0x2542
+527:                       }
+2558  2B9C     INCF vk1, F, BANKED
+255A  B4D8     BTFSC STATUS, 2, ACCESS
+255C  2B9D     INCF process, F, BANKED
+255E  D7E7     BRA 0x252E
+528:                   }
+529:                   output_low(PIN_D1);
+2560  9295     BCF TRISD, 1, ACCESS
+2562  928C     BCF LATD, 1, ACCESS
+530:                   output_low(PIN_D2);
+2564  9495     BCF TRISD, 2, ACCESS
+2566  948C     BCF LATD, 2, ACCESS
+531:           
+532:                   output_high(PIN_D4);
+2568  9895     BCF TRISD, 4, ACCESS
+256A  888C     BSF LATD, 4, ACCESS
+533:                   output_high(PIN_D5);
+256C  9A95     BCF TRISD, 5, ACCESS
+256E  8A8C     BSF LATD, 5, ACCESS
+534:                   for (vk1 = 1; vk1 < 300; ++vk1)
+2570  6B9D     CLRF process, BANKED
+2572  0E01     MOVLW 0x1
+2574  6F9C     MOVWF vk1, BANKED
+2576  519D     MOVF process, W, BANKED
+2578  0801     SUBLW 0x1
+257A  E316     BNC 0x25A8
+257C  E103     BNZ 0x2584
+257E  519C     MOVF vk1, W, BANKED
+2580  082B     SUBLW 0x2B
+2582  E312     BNC 0x25A8
+535:                   {
+536:                       for (vl1 = 1; vl1 < 500; ++vl1)
+2584  6B9F     CLRF gol, BANKED
+2586  0E01     MOVLW 0x1
+2588  6F9E     MOVWF vl1, BANKED
+258A  519F     MOVF gol, W, BANKED
+258C  0801     SUBLW 0x1
+258E  E308     BNC 0x25A0
+2590  E103     BNZ 0x2598
+2592  519E     MOVF vl1, W, BANKED
+2594  08F3     SUBLW 0xF3
+2596  E304     BNC 0x25A0
+537:                       {
+2598  2B9E     INCF vl1, F, BANKED
+259A  B4D8     BTFSC STATUS, 2, ACCESS
+259C  2B9F     INCF gol, F, BANKED
+259E  D7F5     BRA 0x258A
+538:                       }
+25A0  2B9C     INCF vk1, F, BANKED
+25A2  B4D8     BTFSC STATUS, 2, ACCESS
+25A4  2B9D     INCF process, F, BANKED
+25A6  D7E7     BRA 0x2576
+539:                   }
+540:                   output_low(PIN_D4);
+25A8  9895     BCF TRISD, 4, ACCESS
+25AA  988C     BCF LATD, 4, ACCESS
+541:                   output_low(PIN_D5);
+25AC  9A95     BCF TRISD, 5, ACCESS
+25AE  9A8C     BCF LATD, 5, ACCESS
+542:           
+543:                   output_high(PIN_D6);
+25B0  9C95     BCF TRISD, 6, ACCESS
+25B2  8C8C     BSF LATD, 6, ACCESS
+544:                   output_high(PIN_D7);
+25B4  9E95     BCF TRISD, 7, ACCESS
+25B6  8E8C     BSF LATD, 7, ACCESS
+545:           
+546:                   for (vk1 = 1; vk1 < 300; ++vk1)
+25B8  6B9D     CLRF process, BANKED
+25BA  0E01     MOVLW 0x1
+25BC  6F9C     MOVWF vk1, BANKED
+25BE  519D     MOVF process, W, BANKED
+25C0  0801     SUBLW 0x1
+25C2  E316     BNC 0x25F0
+25C4  E103     BNZ 0x25CC
+25C6  519C     MOVF vk1, W, BANKED
+25C8  082B     SUBLW 0x2B
+25CA  E312     BNC 0x25F0
+547:                   {
+548:                       for (vl1 = 1; vl1 < 500; ++vl1)
+25CC  6B9F     CLRF gol, BANKED
+25CE  0E01     MOVLW 0x1
+25D0  6F9E     MOVWF vl1, BANKED
+25D2  519F     MOVF gol, W, BANKED
+25D4  0801     SUBLW 0x1
+25D6  E308     BNC 0x25E8
+25D8  E103     BNZ 0x25E0
+25DA  519E     MOVF vl1, W, BANKED
+25DC  08F3     SUBLW 0xF3
+25DE  E304     BNC 0x25E8
+549:                       {
+25E0  2B9E     INCF vl1, F, BANKED
+25E2  B4D8     BTFSC STATUS, 2, ACCESS
+25E4  2B9F     INCF gol, F, BANKED
+25E6  D7F5     BRA 0x25D2
+550:                       }
+25E8  2B9C     INCF vk1, F, BANKED
+25EA  B4D8     BTFSC STATUS, 2, ACCESS
+25EC  2B9D     INCF process, F, BANKED
+25EE  D7E7     BRA 0x25BE
+551:                   }
+552:           
+553:                   output_low(PIN_D6);
+25F0  9C95     BCF TRISD, 6, ACCESS
+25F2  9C8C     BCF LATD, 6, ACCESS
+554:                   output_low(PIN_D7);
+25F4  9E95     BCF TRISD, 7, ACCESS
+25F6  9E8C     BCF LATD, 7, ACCESS
+555:           
+556:                   output_high(PIN_D1);
+25F8  9295     BCF TRISD, 1, ACCESS
+25FA  828C     BSF LATD, 1, ACCESS
+557:                   output_high(PIN_D2);
+25FC  9495     BCF TRISD, 2, ACCESS
+25FE  848C     BSF LATD, 2, ACCESS
+558:           
+559:                   for (vk1 = 1; vk1 < 300; ++vk1)
+2600  6B9D     CLRF process, BANKED
+2602  0E01     MOVLW 0x1
+2604  6F9C     MOVWF vk1, BANKED
+2606  519D     MOVF process, W, BANKED
+2608  0801     SUBLW 0x1
+260A  E316     BNC 0x2638
+260C  E103     BNZ 0x2614
+260E  519C     MOVF vk1, W, BANKED
+2610  082B     SUBLW 0x2B
+2612  E312     BNC 0x2638
+560:                   {
+561:                       for (vl1 = 1; vl1 < 500; ++vl1)
+2614  6B9F     CLRF gol, BANKED
+2616  0E01     MOVLW 0x1
+2618  6F9E     MOVWF vl1, BANKED
+261A  519F     MOVF gol, W, BANKED
+261C  0801     SUBLW 0x1
+261E  E308     BNC 0x2630
+2620  E103     BNZ 0x2628
+2622  519E     MOVF vl1, W, BANKED
+2624  08F3     SUBLW 0xF3
+2626  E304     BNC 0x2630
+562:                       {
+2628  2B9E     INCF vl1, F, BANKED
+262A  B4D8     BTFSC STATUS, 2, ACCESS
+262C  2B9F     INCF gol, F, BANKED
+262E  D7F5     BRA 0x261A
+563:                       }
+2630  2B9C     INCF vk1, F, BANKED
+2632  B4D8     BTFSC STATUS, 2, ACCESS
+2634  2B9D     INCF process, F, BANKED
+2636  D7E7     BRA 0x2606
+564:                   }
+565:                   output_low(PIN_D1);
+2638  9295     BCF TRISD, 1, ACCESS
+263A  928C     BCF LATD, 1, ACCESS
+566:                   output_low(PIN_D2);
+263C  9495     BCF TRISD, 2, ACCESS
+263E  948C     BCF LATD, 2, ACCESS
+567:           
+568:                   output_high(PIN_D4);
+2640  9895     BCF TRISD, 4, ACCESS
+2642  888C     BSF LATD, 4, ACCESS
+569:                   output_high(PIN_D5);
+2644  9A95     BCF TRISD, 5, ACCESS
+2646  8A8C     BSF LATD, 5, ACCESS
+570:                   for (vk1 = 1; vk1 < 300; ++vk1)
+2648  6B9D     CLRF process, BANKED
+264A  0E01     MOVLW 0x1
+264C  6F9C     MOVWF vk1, BANKED
+264E  519D     MOVF process, W, BANKED
+2650  0801     SUBLW 0x1
+2652  E316     BNC 0x2680
+2654  E103     BNZ 0x265C
+2656  519C     MOVF vk1, W, BANKED
+2658  082B     SUBLW 0x2B
+265A  E312     BNC 0x2680
+571:                   {
+572:                       for (vl1 = 1; vl1 < 500; ++vl1)
+265C  6B9F     CLRF gol, BANKED
+265E  0E01     MOVLW 0x1
+2660  6F9E     MOVWF vl1, BANKED
+2662  519F     MOVF gol, W, BANKED
+2664  0801     SUBLW 0x1
+2666  E308     BNC 0x2678
+2668  E103     BNZ 0x2670
+266A  519E     MOVF vl1, W, BANKED
+266C  08F3     SUBLW 0xF3
+266E  E304     BNC 0x2678
+573:                       {
+2670  2B9E     INCF vl1, F, BANKED
+2672  B4D8     BTFSC STATUS, 2, ACCESS
+2674  2B9F     INCF gol, F, BANKED
+2676  D7F5     BRA 0x2662
+574:                       }
+2678  2B9C     INCF vk1, F, BANKED
+267A  B4D8     BTFSC STATUS, 2, ACCESS
+267C  2B9D     INCF process, F, BANKED
+267E  D7E7     BRA 0x264E
+575:                   }
+576:                   output_low(PIN_D4);
+2680  9895     BCF TRISD, 4, ACCESS
+2682  988C     BCF LATD, 4, ACCESS
+577:                   output_low(PIN_D5);
+2684  9A95     BCF TRISD, 5, ACCESS
+2686  9A8C     BCF LATD, 5, ACCESS
+578:           
+579:                   output_high(PIN_D6);
+2688  9C95     BCF TRISD, 6, ACCESS
+268A  8C8C     BSF LATD, 6, ACCESS
+580:                   output_high(PIN_D7);
+268C  9E95     BCF TRISD, 7, ACCESS
+268E  8E8C     BSF LATD, 7, ACCESS
+581:           
+582:                   for (vk1 = 1; vk1 < 300; ++vk1)
+2690  6B9D     CLRF process, BANKED
+2692  0E01     MOVLW 0x1
+2694  6F9C     MOVWF vk1, BANKED
+2696  519D     MOVF process, W, BANKED
+2698  0801     SUBLW 0x1
+269A  E316     BNC 0x26C8
+269C  E103     BNZ 0x26A4
+269E  519C     MOVF vk1, W, BANKED
+26A0  082B     SUBLW 0x2B
+26A2  E312     BNC 0x26C8
+583:                   {
+584:                       for (vl1 = 1; vl1 < 500; ++vl1)
+26A4  6B9F     CLRF gol, BANKED
+26A6  0E01     MOVLW 0x1
+26A8  6F9E     MOVWF vl1, BANKED
+26AA  519F     MOVF gol, W, BANKED
+26AC  0801     SUBLW 0x1
+26AE  E308     BNC 0x26C0
+26B0  E103     BNZ 0x26B8
+26B2  519E     MOVF vl1, W, BANKED
+26B4  08F3     SUBLW 0xF3
+26B6  E304     BNC 0x26C0
+585:                       {
+26B8  2B9E     INCF vl1, F, BANKED
+26BA  B4D8     BTFSC STATUS, 2, ACCESS
+26BC  2B9F     INCF gol, F, BANKED
+26BE  D7F5     BRA 0x26AA
+586:                       }
+26C0  2B9C     INCF vk1, F, BANKED
+26C2  B4D8     BTFSC STATUS, 2, ACCESS
+26C4  2B9D     INCF process, F, BANKED
+26C6  D7E7     BRA 0x2696
+587:                   }
+588:           
+589:           
+590:                   output_low(PIN_D1);
+26C8  9295     BCF TRISD, 1, ACCESS
+26CA  928C     BCF LATD, 1, ACCESS
+591:                   output_low(PIN_D2);
+26CC  9495     BCF TRISD, 2, ACCESS
+26CE  948C     BCF LATD, 2, ACCESS
+592:           
+593:                   output_low(PIN_D4);
+26D0  9895     BCF TRISD, 4, ACCESS
+26D2  988C     BCF LATD, 4, ACCESS
+594:                   output_low(PIN_D5);
+26D4  9A95     BCF TRISD, 5, ACCESS
+26D6  9A8C     BCF LATD, 5, ACCESS
+595:           
+596:                   output_low(PIN_D6);
+26D8  9C95     BCF TRISD, 6, ACCESS
+26DA  9C8C     BCF LATD, 6, ACCESS
+597:                   output_low(PIN_D7);
+26DC  9E95     BCF TRISD, 7, ACCESS
+26DE  9E8C     BCF LATD, 7, ACCESS
+598:           
+599:                   for (vk1 = 1; vk1 < 300; ++vk1)
+26E0  6B9D     CLRF process, BANKED
+26E2  0E01     MOVLW 0x1
+26E4  6F9C     MOVWF vk1, BANKED
+26E6  519D     MOVF process, W, BANKED
+26E8  0801     SUBLW 0x1
+26EA  E316     BNC 0x2718
+26EC  E103     BNZ 0x26F4
+26EE  519C     MOVF vk1, W, BANKED
+26F0  082B     SUBLW 0x2B
+26F2  E312     BNC 0x2718
+600:                   {
+601:                       for (vl1 = 1; vl1 < 500; ++vl1)
+26F4  6B9F     CLRF gol, BANKED
+26F6  0E01     MOVLW 0x1
+26F8  6F9E     MOVWF vl1, BANKED
+26FA  519F     MOVF gol, W, BANKED
+26FC  0801     SUBLW 0x1
+26FE  E308     BNC 0x2710
+2700  E103     BNZ 0x2708
+2702  519E     MOVF vl1, W, BANKED
+2704  08F3     SUBLW 0xF3
+2706  E304     BNC 0x2710
+602:                       {
+2708  2B9E     INCF vl1, F, BANKED
+270A  B4D8     BTFSC STATUS, 2, ACCESS
+270C  2B9F     INCF gol, F, BANKED
+270E  D7F5     BRA 0x26FA
+603:                       }
+2710  2B9C     INCF vk1, F, BANKED
+2712  B4D8     BTFSC STATUS, 2, ACCESS
+2714  2B9D     INCF process, F, BANKED
+2716  D7E7     BRA 0x26E6
+604:                   }
+605:                   output_high(PIN_D1);
+2718  9295     BCF TRISD, 1, ACCESS
+271A  828C     BSF LATD, 1, ACCESS
+606:                   for (vk1 = 1; vk1 < 300; ++vk1)
+271C  6B9D     CLRF process, BANKED
+271E  0E01     MOVLW 0x1
+2720  6F9C     MOVWF vk1, BANKED
+2722  519D     MOVF process, W, BANKED
+2724  0801     SUBLW 0x1
+2726  E316     BNC 0x2754
+2728  E103     BNZ 0x2730
+272A  519C     MOVF vk1, W, BANKED
+272C  082B     SUBLW 0x2B
+272E  E312     BNC 0x2754
+607:                   {
+608:                       for (vl1 = 1; vl1 < 500; ++vl1)
+2730  6B9F     CLRF gol, BANKED
+2732  0E01     MOVLW 0x1
+2734  6F9E     MOVWF vl1, BANKED
+2736  519F     MOVF gol, W, BANKED
+2738  0801     SUBLW 0x1
+273A  E308     BNC 0x274C
+273C  E103     BNZ 0x2744
+273E  519E     MOVF vl1, W, BANKED
+2740  08F3     SUBLW 0xF3
+2742  E304     BNC 0x274C
+609:                       {
+2744  2B9E     INCF vl1, F, BANKED
+2746  B4D8     BTFSC STATUS, 2, ACCESS
+2748  2B9F     INCF gol, F, BANKED
+274A  D7F5     BRA 0x2736
+610:                       }
+274C  2B9C     INCF vk1, F, BANKED
+274E  B4D8     BTFSC STATUS, 2, ACCESS
+2750  2B9D     INCF process, F, BANKED
+2752  D7E7     BRA 0x2722
+611:                   }
+612:                   output_low(PIN_D1);
+2754  9295     BCF TRISD, 1, ACCESS
+2756  928C     BCF LATD, 1, ACCESS
+613:                   output_high(PIN_D2);
+2758  9495     BCF TRISD, 2, ACCESS
+275A  848C     BSF LATD, 2, ACCESS
+614:           
+615:                   for (vk1 = 1; vk1 < 300; ++vk1)
+275C  6B9D     CLRF process, BANKED
+275E  0E01     MOVLW 0x1
+2760  6F9C     MOVWF vk1, BANKED
+2762  519D     MOVF process, W, BANKED
+2764  0801     SUBLW 0x1
+2766  E316     BNC 0x2794
+2768  E103     BNZ 0x2770
+276A  519C     MOVF vk1, W, BANKED
+276C  082B     SUBLW 0x2B
+276E  E312     BNC 0x2794
+616:                   {
+617:                       for (vl1 = 1; vl1 < 500; ++vl1)
+2770  6B9F     CLRF gol, BANKED
+2772  0E01     MOVLW 0x1
+2774  6F9E     MOVWF vl1, BANKED
+2776  519F     MOVF gol, W, BANKED
+2778  0801     SUBLW 0x1
+277A  E308     BNC 0x278C
+277C  E103     BNZ 0x2784
+277E  519E     MOVF vl1, W, BANKED
+2780  08F3     SUBLW 0xF3
+2782  E304     BNC 0x278C
+618:                       {
+2784  2B9E     INCF vl1, F, BANKED
+2786  B4D8     BTFSC STATUS, 2, ACCESS
+2788  2B9F     INCF gol, F, BANKED
+278A  D7F5     BRA 0x2776
+619:                       }
+278C  2B9C     INCF vk1, F, BANKED
+278E  B4D8     BTFSC STATUS, 2, ACCESS
+2790  2B9D     INCF process, F, BANKED
+2792  D7E7     BRA 0x2762
+620:                   }
+621:                   output_low(PIN_D2);
+2794  9495     BCF TRISD, 2, ACCESS
+2796  948C     BCF LATD, 2, ACCESS
+622:                   output_high(PIN_D4);
+2798  9895     BCF TRISD, 4, ACCESS
+279A  888C     BSF LATD, 4, ACCESS
+623:           
+624:                   for (vk1 = 1; vk1 < 300; ++vk1)
+279C  6B9D     CLRF process, BANKED
+279E  0E01     MOVLW 0x1
+27A0  6F9C     MOVWF vk1, BANKED
+27A2  519D     MOVF process, W, BANKED
+27A4  0801     SUBLW 0x1
+27A6  E316     BNC 0x27D4
+27A8  E103     BNZ 0x27B0
+27AA  519C     MOVF vk1, W, BANKED
+27AC  082B     SUBLW 0x2B
+27AE  E312     BNC 0x27D4
+625:                   {
+626:                       for (vl1 = 1; vl1 < 500; ++vl1)
+27B0  6B9F     CLRF gol, BANKED
+27B2  0E01     MOVLW 0x1
+27B4  6F9E     MOVWF vl1, BANKED
+27B6  519F     MOVF gol, W, BANKED
+27B8  0801     SUBLW 0x1
+27BA  E308     BNC 0x27CC
+27BC  E103     BNZ 0x27C4
+27BE  519E     MOVF vl1, W, BANKED
+27C0  08F3     SUBLW 0xF3
+27C2  E304     BNC 0x27CC
+627:                       {
+27C4  2B9E     INCF vl1, F, BANKED
+27C6  B4D8     BTFSC STATUS, 2, ACCESS
+27C8  2B9F     INCF gol, F, BANKED
+27CA  D7F5     BRA 0x27B6
+628:                       }
+27CC  2B9C     INCF vk1, F, BANKED
+27CE  B4D8     BTFSC STATUS, 2, ACCESS
+27D0  2B9D     INCF process, F, BANKED
+27D2  D7E7     BRA 0x27A2
+629:                   }
+630:                   output_low(PIN_D4);
+27D4  9895     BCF TRISD, 4, ACCESS
+27D6  988C     BCF LATD, 4, ACCESS
+631:                   output_high(PIN_D5);
+27D8  9A95     BCF TRISD, 5, ACCESS
+27DA  8A8C     BSF LATD, 5, ACCESS
+632:           
+633:           
+634:                   for (vk1 = 1; vk1 < 300; ++vk1)
+27DC  6B9D     CLRF process, BANKED
+27DE  0E01     MOVLW 0x1
+27E0  6F9C     MOVWF vk1, BANKED
+27E2  519D     MOVF process, W, BANKED
+27E4  0801     SUBLW 0x1
+27E6  E316     BNC 0x2814
+27E8  E103     BNZ 0x27F0
+27EA  519C     MOVF vk1, W, BANKED
+27EC  082B     SUBLW 0x2B
+27EE  E312     BNC 0x2814
+635:                   {
+636:                       for (vl1 = 1; vl1 < 500; ++vl1)
+27F0  6B9F     CLRF gol, BANKED
+27F2  0E01     MOVLW 0x1
+27F4  6F9E     MOVWF vl1, BANKED
+27F6  519F     MOVF gol, W, BANKED
+27F8  0801     SUBLW 0x1
+27FA  E308     BNC 0x280C
+27FC  E103     BNZ 0x2804
+27FE  519E     MOVF vl1, W, BANKED
+2800  08F3     SUBLW 0xF3
+2802  E304     BNC 0x280C
+637:                       {
+2804  2B9E     INCF vl1, F, BANKED
+2806  B4D8     BTFSC STATUS, 2, ACCESS
+2808  2B9F     INCF gol, F, BANKED
+280A  D7F5     BRA 0x27F6
+638:                       }
+280C  2B9C     INCF vk1, F, BANKED
+280E  B4D8     BTFSC STATUS, 2, ACCESS
+2810  2B9D     INCF process, F, BANKED
+2812  D7E7     BRA 0x27E2
+639:                   }
+640:                   output_low(PIN_D5);
+2814  9A95     BCF TRISD, 5, ACCESS
+2816  9A8C     BCF LATD, 5, ACCESS
+641:                   output_high(PIN_D6);
+2818  9C95     BCF TRISD, 6, ACCESS
+281A  8C8C     BSF LATD, 6, ACCESS
+642:           
+643:                   for (vk1 = 1; vk1 < 300; ++vk1)
+281C  6B9D     CLRF process, BANKED
+281E  0E01     MOVLW 0x1
+2820  6F9C     MOVWF vk1, BANKED
+2822  519D     MOVF process, W, BANKED
+2824  0801     SUBLW 0x1
+2826  E316     BNC 0x2854
+2828  E103     BNZ 0x2830
+282A  519C     MOVF vk1, W, BANKED
+282C  082B     SUBLW 0x2B
+282E  E312     BNC 0x2854
+644:                   {
+645:                       for (vl1 = 1; vl1 < 500; ++vl1)
+2830  6B9F     CLRF gol, BANKED
+2832  0E01     MOVLW 0x1
+2834  6F9E     MOVWF vl1, BANKED
+2836  519F     MOVF gol, W, BANKED
+2838  0801     SUBLW 0x1
+283A  E308     BNC 0x284C
+283C  E103     BNZ 0x2844
+283E  519E     MOVF vl1, W, BANKED
+2840  08F3     SUBLW 0xF3
+2842  E304     BNC 0x284C
+646:                       {
+2844  2B9E     INCF vl1, F, BANKED
+2846  B4D8     BTFSC STATUS, 2, ACCESS
+2848  2B9F     INCF gol, F, BANKED
+284A  D7F5     BRA 0x2836
+647:                       }
+284C  2B9C     INCF vk1, F, BANKED
+284E  B4D8     BTFSC STATUS, 2, ACCESS
+2850  2B9D     INCF process, F, BANKED
+2852  D7E7     BRA 0x2822
+648:                   }
+649:                   output_low(PIN_D6);
+2854  9C95     BCF TRISD, 6, ACCESS
+2856  9C8C     BCF LATD, 6, ACCESS
+650:                   output_high(PIN_D7);
+2858  9E95     BCF TRISD, 7, ACCESS
+285A  8E8C     BSF LATD, 7, ACCESS
+651:           
+652:                   for (vk1 = 1; vk1 < 300; ++vk1)
+285C  6B9D     CLRF process, BANKED
+285E  0E01     MOVLW 0x1
+2860  6F9C     MOVWF vk1, BANKED
+2862  519D     MOVF process, W, BANKED
+2864  0801     SUBLW 0x1
+2866  E316     BNC 0x2894
+2868  E103     BNZ 0x2870
+286A  519C     MOVF vk1, W, BANKED
+286C  082B     SUBLW 0x2B
+286E  E312     BNC 0x2894
+653:                   {
+654:                       for (vl1 = 1; vl1 < 500; ++vl1)
+2870  6B9F     CLRF gol, BANKED
+2872  0E01     MOVLW 0x1
+2874  6F9E     MOVWF vl1, BANKED
+2876  519F     MOVF gol, W, BANKED
+2878  0801     SUBLW 0x1
+287A  E308     BNC 0x288C
+287C  E103     BNZ 0x2884
+287E  519E     MOVF vl1, W, BANKED
+2880  08F3     SUBLW 0xF3
+2882  E304     BNC 0x288C
+655:                       {
+2884  2B9E     INCF vl1, F, BANKED
+2886  B4D8     BTFSC STATUS, 2, ACCESS
+2888  2B9F     INCF gol, F, BANKED
+288A  D7F5     BRA 0x2876
+656:                       }
+288C  2B9C     INCF vk1, F, BANKED
+288E  B4D8     BTFSC STATUS, 2, ACCESS
+2890  2B9D     INCF process, F, BANKED
+2892  D7E7     BRA 0x2862
+657:                   }
+658:           
+659:           
+660:           
+661:           
+662:                   ///
+663:           
+664:                   output_low(PIN_D7);
+2894  9E95     BCF TRISD, 7, ACCESS
+2896  9E8C     BCF LATD, 7, ACCESS
+665:                   output_high(PIN_D1);
+2898  9295     BCF TRISD, 1, ACCESS
+289A  828C     BSF LATD, 1, ACCESS
+666:                   for (vk1 = 1; vk1 < 300; ++vk1)
+289C  6B9D     CLRF process, BANKED
+289E  0E01     MOVLW 0x1
+28A0  6F9C     MOVWF vk1, BANKED
+28A2  519D     MOVF process, W, BANKED
+28A4  0801     SUBLW 0x1
+28A6  E316     BNC 0x28D4
+28A8  E103     BNZ 0x28B0
+28AA  519C     MOVF vk1, W, BANKED
+28AC  082B     SUBLW 0x2B
+28AE  E312     BNC 0x28D4
+667:                   {
+668:                       for (vl1 = 1; vl1 < 500; ++vl1)
+28B0  6B9F     CLRF gol, BANKED
+28B2  0E01     MOVLW 0x1
+28B4  6F9E     MOVWF vl1, BANKED
+28B6  519F     MOVF gol, W, BANKED
+28B8  0801     SUBLW 0x1
+28BA  E308     BNC 0x28CC
+28BC  E103     BNZ 0x28C4
+28BE  519E     MOVF vl1, W, BANKED
+28C0  08F3     SUBLW 0xF3
+28C2  E304     BNC 0x28CC
+669:                       {
+28C4  2B9E     INCF vl1, F, BANKED
+28C6  B4D8     BTFSC STATUS, 2, ACCESS
+28C8  2B9F     INCF gol, F, BANKED
+28CA  D7F5     BRA 0x28B6
+670:                       }
+28CC  2B9C     INCF vk1, F, BANKED
+28CE  B4D8     BTFSC STATUS, 2, ACCESS
+28D0  2B9D     INCF process, F, BANKED
+28D2  D7E7     BRA 0x28A2
+671:                   }
+672:                   output_low(PIN_D1);
+28D4  9295     BCF TRISD, 1, ACCESS
+28D6  928C     BCF LATD, 1, ACCESS
+673:                   output_high(PIN_D2);
+28D8  9495     BCF TRISD, 2, ACCESS
+28DA  848C     BSF LATD, 2, ACCESS
+674:           
+675:                   for (vk1 = 1; vk1 < 300; ++vk1)
+28DC  6B9D     CLRF process, BANKED
+28DE  0E01     MOVLW 0x1
+28E0  6F9C     MOVWF vk1, BANKED
+28E2  519D     MOVF process, W, BANKED
+28E4  0801     SUBLW 0x1
+28E6  E316     BNC 0x2914
+28E8  E103     BNZ 0x28F0
+28EA  519C     MOVF vk1, W, BANKED
+28EC  082B     SUBLW 0x2B
+28EE  E312     BNC 0x2914
+676:                   {
+677:                       for (vl1 = 1; vl1 < 500; ++vl1)
+28F0  6B9F     CLRF gol, BANKED
+28F2  0E01     MOVLW 0x1
+28F4  6F9E     MOVWF vl1, BANKED
+28F6  519F     MOVF gol, W, BANKED
+28F8  0801     SUBLW 0x1
+28FA  E308     BNC 0x290C
+28FC  E103     BNZ 0x2904
+28FE  519E     MOVF vl1, W, BANKED
+2900  08F3     SUBLW 0xF3
+2902  E304     BNC 0x290C
+678:                       {
+2904  2B9E     INCF vl1, F, BANKED
+2906  B4D8     BTFSC STATUS, 2, ACCESS
+2908  2B9F     INCF gol, F, BANKED
+290A  D7F5     BRA 0x28F6
+679:                       }
+290C  2B9C     INCF vk1, F, BANKED
+290E  B4D8     BTFSC STATUS, 2, ACCESS
+2910  2B9D     INCF process, F, BANKED
+2912  D7E7     BRA 0x28E2
+680:                   }
+681:                   output_low(PIN_D2);
+2914  9495     BCF TRISD, 2, ACCESS
+2916  948C     BCF LATD, 2, ACCESS
+682:                   output_high(PIN_D4);
+2918  9895     BCF TRISD, 4, ACCESS
+291A  888C     BSF LATD, 4, ACCESS
+683:           
+684:                   for (vk1 = 1; vk1 < 300; ++vk1)
+291C  6B9D     CLRF process, BANKED
+291E  0E01     MOVLW 0x1
+2920  6F9C     MOVWF vk1, BANKED
+2922  519D     MOVF process, W, BANKED
+2924  0801     SUBLW 0x1
+2926  E316     BNC 0x2954
+2928  E103     BNZ 0x2930
+292A  519C     MOVF vk1, W, BANKED
+292C  082B     SUBLW 0x2B
+292E  E312     BNC 0x2954
+685:                   {
+686:                       for (vl1 = 1; vl1 < 500; ++vl1)
+2930  6B9F     CLRF gol, BANKED
+2932  0E01     MOVLW 0x1
+2934  6F9E     MOVWF vl1, BANKED
+2936  519F     MOVF gol, W, BANKED
+2938  0801     SUBLW 0x1
+293A  E308     BNC 0x294C
+293C  E103     BNZ 0x2944
+293E  519E     MOVF vl1, W, BANKED
+2940  08F3     SUBLW 0xF3
+2942  E304     BNC 0x294C
+687:                       {
+2944  2B9E     INCF vl1, F, BANKED
+2946  B4D8     BTFSC STATUS, 2, ACCESS
+2948  2B9F     INCF gol, F, BANKED
+294A  D7F5     BRA 0x2936
+688:                       }
+294C  2B9C     INCF vk1, F, BANKED
+294E  B4D8     BTFSC STATUS, 2, ACCESS
+2950  2B9D     INCF process, F, BANKED
+2952  D7E7     BRA 0x2922
+689:                   }
+690:                   output_low(PIN_D4);
+2954  9895     BCF TRISD, 4, ACCESS
+2956  988C     BCF LATD, 4, ACCESS
+691:                   output_high(PIN_D5);
+2958  9A95     BCF TRISD, 5, ACCESS
+295A  8A8C     BSF LATD, 5, ACCESS
+692:           
+693:           
+694:                   for (vk1 = 1; vk1 < 300; ++vk1)
+295C  6B9D     CLRF process, BANKED
+295E  0E01     MOVLW 0x1
+2960  6F9C     MOVWF vk1, BANKED
+2962  519D     MOVF process, W, BANKED
+2964  0801     SUBLW 0x1
+2966  E316     BNC 0x2994
+2968  E103     BNZ 0x2970
+296A  519C     MOVF vk1, W, BANKED
+296C  082B     SUBLW 0x2B
+296E  E312     BNC 0x2994
+695:                   {
+696:                       for (vl1 = 1; vl1 < 500; ++vl1)
+2970  6B9F     CLRF gol, BANKED
+2972  0E01     MOVLW 0x1
+2974  6F9E     MOVWF vl1, BANKED
+2976  519F     MOVF gol, W, BANKED
+2978  0801     SUBLW 0x1
+297A  E308     BNC 0x298C
+297C  E103     BNZ 0x2984
+297E  519E     MOVF vl1, W, BANKED
+2980  08F3     SUBLW 0xF3
+2982  E304     BNC 0x298C
+697:                       {
+2984  2B9E     INCF vl1, F, BANKED
+2986  B4D8     BTFSC STATUS, 2, ACCESS
+2988  2B9F     INCF gol, F, BANKED
+298A  D7F5     BRA 0x2976
+698:                       }
+298C  2B9C     INCF vk1, F, BANKED
+298E  B4D8     BTFSC STATUS, 2, ACCESS
+2990  2B9D     INCF process, F, BANKED
+2992  D7E7     BRA 0x2962
+699:                   }
+700:                   output_low(PIN_D5);
+2994  9A95     BCF TRISD, 5, ACCESS
+2996  9A8C     BCF LATD, 5, ACCESS
+701:                   output_high(PIN_D6);
+2998  9C95     BCF TRISD, 6, ACCESS
+299A  8C8C     BSF LATD, 6, ACCESS
+702:           
+703:                   for (vk1 = 1; vk1 < 300; ++vk1)
+299C  6B9D     CLRF process, BANKED
+299E  0E01     MOVLW 0x1
+29A0  6F9C     MOVWF vk1, BANKED
+29A2  519D     MOVF process, W, BANKED
+29A4  0801     SUBLW 0x1
+29A6  E316     BNC 0x29D4
+29A8  E103     BNZ 0x29B0
+29AA  519C     MOVF vk1, W, BANKED
+29AC  082B     SUBLW 0x2B
+29AE  E312     BNC 0x29D4
+704:                   {
+705:                       for (vl1 = 1; vl1 < 500; ++vl1)
+29B0  6B9F     CLRF gol, BANKED
+29B2  0E01     MOVLW 0x1
+29B4  6F9E     MOVWF vl1, BANKED
+29B6  519F     MOVF gol, W, BANKED
+29B8  0801     SUBLW 0x1
+29BA  E308     BNC 0x29CC
+29BC  E103     BNZ 0x29C4
+29BE  519E     MOVF vl1, W, BANKED
+29C0  08F3     SUBLW 0xF3
+29C2  E304     BNC 0x29CC
+706:                       {
+29C4  2B9E     INCF vl1, F, BANKED
+29C6  B4D8     BTFSC STATUS, 2, ACCESS
+29C8  2B9F     INCF gol, F, BANKED
+29CA  D7F5     BRA 0x29B6
+707:                       }
+29CC  2B9C     INCF vk1, F, BANKED
+29CE  B4D8     BTFSC STATUS, 2, ACCESS
+29D0  2B9D     INCF process, F, BANKED
+29D2  D7E7     BRA 0x29A2
+708:                   }
+709:                   output_low(PIN_D6);
+29D4  9C95     BCF TRISD, 6, ACCESS
+29D6  9C8C     BCF LATD, 6, ACCESS
+710:                   output_high(PIN_D7);
+29D8  9E95     BCF TRISD, 7, ACCESS
+29DA  8E8C     BSF LATD, 7, ACCESS
+711:           
+712:                   for (vk1 = 1; vk1 < 300; ++vk1)
+29DC  6B9D     CLRF process, BANKED
+29DE  0E01     MOVLW 0x1
+29E0  6F9C     MOVWF vk1, BANKED
+29E2  519D     MOVF process, W, BANKED
+29E4  0801     SUBLW 0x1
+29E6  E316     BNC 0x2A14
+29E8  E103     BNZ 0x29F0
+29EA  519C     MOVF vk1, W, BANKED
+29EC  082B     SUBLW 0x2B
+29EE  E312     BNC 0x2A14
+713:                   {
+714:                       for (vl1 = 1; vl1 < 500; ++vl1)
+29F0  6B9F     CLRF gol, BANKED
+29F2  0E01     MOVLW 0x1
+29F4  6F9E     MOVWF vl1, BANKED
+29F6  519F     MOVF gol, W, BANKED
+29F8  0801     SUBLW 0x1
+29FA  E308     BNC 0x2A0C
+29FC  E103     BNZ 0x2A04
+29FE  519E     MOVF vl1, W, BANKED
+2A00  08F3     SUBLW 0xF3
+2A02  E304     BNC 0x2A0C
+715:                       {
+2A04  2B9E     INCF vl1, F, BANKED
+2A06  B4D8     BTFSC STATUS, 2, ACCESS
+2A08  2B9F     INCF gol, F, BANKED
+2A0A  D7F5     BRA 0x29F6
+716:                       }
+2A0C  2B9C     INCF vk1, F, BANKED
+2A0E  B4D8     BTFSC STATUS, 2, ACCESS
+2A10  2B9D     INCF process, F, BANKED
+2A12  D7E7     BRA 0x29E2
+717:                   }
+2A14  D57D     BRA Task4
+718:           
+719:               }
+2A16  0012     RETURN 0
+720:           
+721:           
+722:           
+723:           }
+724:           
+725:           
+726:           
+727:           // Prog 7
+728:           
+729:           #ORG 0x3010, 0x3500
+730:           
+731:           void Task5(void)
+732:           {
+733:               long l1, k1;
+734:               while (1)
+735:               {
+736:           
+737:                   output_low(PIN_E0);
+3010  9096     BCF TRISE, 0, ACCESS
+3012  908D     BCF LATE, 0, ACCESS
+738:                   output_low(PIN_E1);
+3014  9296     BCF TRISE, 1, ACCESS
+3016  928D     BCF LATE, 1, ACCESS
+739:                   output_low(PIN_E2);
+3018  9496     BCF TRISE, 2, ACCESS
+301A  948D     BCF LATE, 2, ACCESS
+740:                   for (l1 = 1; l1 < 400; ++l1)
+301C  6B9D     CLRF process, BANKED
+301E  0E01     MOVLW 0x1
+3020  6F9C     MOVWF vk1, BANKED
+3022  519D     MOVF process, W, BANKED
+3024  0801     SUBLW 0x1
+3026  E316     BNC 0x3054
+3028  E103     BNZ 0x3030
+302A  519C     MOVF vk1, W, BANKED
+302C  088F     SUBLW 0x8F
+302E  E312     BNC 0x3054
+741:                   {
+742:                       for (k1 = 1; k1 < 500; ++k1)
+3030  6B9F     CLRF gol, BANKED
+3032  0E01     MOVLW 0x1
+3034  6F9E     MOVWF vl1, BANKED
+3036  519F     MOVF gol, W, BANKED
+3038  0801     SUBLW 0x1
+303A  E308     BNC 0x304C
+303C  E103     BNZ 0x3044
+303E  519E     MOVF vl1, W, BANKED
+3040  08F3     SUBLW 0xF3
+3042  E304     BNC 0x304C
+743:                       {
+3044  2B9E     INCF vl1, F, BANKED
+3046  B4D8     BTFSC STATUS, 2, ACCESS
+3048  2B9F     INCF gol, F, BANKED
+304A  D7F5     BRA 0x3036
+744:                       }
+304C  2B9C     INCF vk1, F, BANKED
+304E  B4D8     BTFSC STATUS, 2, ACCESS
+3050  2B9D     INCF process, F, BANKED
+3052  D7E7     BRA 0x3022
+745:                   }
+746:                   output_high(PIN_E0);
+3054  9096     BCF TRISE, 0, ACCESS
+3056  808D     BSF LATE, 0, ACCESS
+747:                   for (l1 = 1; l1 < 400; ++l1)
+3058  6B9D     CLRF process, BANKED
+305A  0E01     MOVLW 0x1
+305C  6F9C     MOVWF vk1, BANKED
+305E  519D     MOVF process, W, BANKED
+3060  0801     SUBLW 0x1
+3062  E316     BNC 0x3090
+3064  E103     BNZ 0x306C
+3066  519C     MOVF vk1, W, BANKED
+3068  088F     SUBLW 0x8F
+306A  E312     BNC 0x3090
+748:                   {
+749:                       for (k1 = 1; k1 < 500; ++k1)
+306C  6B9F     CLRF gol, BANKED
+306E  0E01     MOVLW 0x1
+3070  6F9E     MOVWF vl1, BANKED
+3072  519F     MOVF gol, W, BANKED
+3074  0801     SUBLW 0x1
+3076  E308     BNC 0x3088
+3078  E103     BNZ 0x3080
+307A  519E     MOVF vl1, W, BANKED
+307C  08F3     SUBLW 0xF3
+307E  E304     BNC 0x3088
+750:                       {
+3080  2B9E     INCF vl1, F, BANKED
+3082  B4D8     BTFSC STATUS, 2, ACCESS
+3084  2B9F     INCF gol, F, BANKED
+3086  D7F5     BRA 0x3072
+751:                       }
+3088  2B9C     INCF vk1, F, BANKED
+308A  B4D8     BTFSC STATUS, 2, ACCESS
+308C  2B9D     INCF process, F, BANKED
+308E  D7E7     BRA 0x305E
+752:                   }
+753:                   output_high(PIN_E1);
+3090  9296     BCF TRISE, 1, ACCESS
+3092  828D     BSF LATE, 1, ACCESS
+754:                   output_low(PIN_E0);
+3094  9096     BCF TRISE, 0, ACCESS
+3096  908D     BCF LATE, 0, ACCESS
+755:                   for (l1 = 1; l1 < 400; ++l1)
+3098  6B9D     CLRF process, BANKED
+309A  0E01     MOVLW 0x1
+309C  6F9C     MOVWF vk1, BANKED
+309E  519D     MOVF process, W, BANKED
+30A0  0801     SUBLW 0x1
+30A2  E316     BNC 0x30D0
+30A4  E103     BNZ 0x30AC
+30A6  519C     MOVF vk1, W, BANKED
+30A8  088F     SUBLW 0x8F
+30AA  E312     BNC 0x30D0
+756:                   {
+757:                       for (k1 = 1; k1 < 500; ++k1)
+30AC  6B9F     CLRF gol, BANKED
+30AE  0E01     MOVLW 0x1
+30B0  6F9E     MOVWF vl1, BANKED
+30B2  519F     MOVF gol, W, BANKED
+30B4  0801     SUBLW 0x1
+30B6  E308     BNC 0x30C8
+30B8  E103     BNZ 0x30C0
+30BA  519E     MOVF vl1, W, BANKED
+30BC  08F3     SUBLW 0xF3
+30BE  E304     BNC 0x30C8
+758:                       {
+30C0  2B9E     INCF vl1, F, BANKED
+30C2  B4D8     BTFSC STATUS, 2, ACCESS
+30C4  2B9F     INCF gol, F, BANKED
+30C6  D7F5     BRA 0x30B2
+759:                       }
+30C8  2B9C     INCF vk1, F, BANKED
+30CA  B4D8     BTFSC STATUS, 2, ACCESS
+30CC  2B9D     INCF process, F, BANKED
+30CE  D7E7     BRA 0x309E
+760:                   }
+761:                   output_high(PIN_E2);
+30D0  9496     BCF TRISE, 2, ACCESS
+30D2  848D     BSF LATE, 2, ACCESS
+762:                   output_low(PIN_E1);
+30D4  9296     BCF TRISE, 1, ACCESS
+30D6  928D     BCF LATE, 1, ACCESS
+763:                   for (l1 = 1; l1 < 400; ++l1)
+30D8  6B9D     CLRF process, BANKED
+30DA  0E01     MOVLW 0x1
+30DC  6F9C     MOVWF vk1, BANKED
+30DE  519D     MOVF process, W, BANKED
+30E0  0801     SUBLW 0x1
+30E2  E316     BNC 0x3110
+30E4  E103     BNZ 0x30EC
+30E6  519C     MOVF vk1, W, BANKED
+30E8  088F     SUBLW 0x8F
+30EA  E312     BNC 0x3110
+764:                   {
+765:                       for (k1 = 1; k1 < 500; ++k1)
+30EC  6B9F     CLRF gol, BANKED
+30EE  0E01     MOVLW 0x1
+30F0  6F9E     MOVWF vl1, BANKED
+30F2  519F     MOVF gol, W, BANKED
+30F4  0801     SUBLW 0x1
+30F6  E308     BNC 0x3108
+30F8  E103     BNZ 0x3100
+30FA  519E     MOVF vl1, W, BANKED
+30FC  08F3     SUBLW 0xF3
+30FE  E304     BNC 0x3108
+766:                       {
+3100  2B9E     INCF vl1, F, BANKED
+3102  B4D8     BTFSC STATUS, 2, ACCESS
+3104  2B9F     INCF gol, F, BANKED
+3106  D7F5     BRA 0x30F2
+767:                       }
+3108  2B9C     INCF vk1, F, BANKED
+310A  B4D8     BTFSC STATUS, 2, ACCESS
+310C  2B9D     INCF process, F, BANKED
+310E  D7E7     BRA 0x30DE
+768:                   }
+3110  D77F     BRA Task5
+769:               }
+3112  0012     RETURN 0
+770:           }
+771:           
+772:           void Port_Init()
+773:           {
+774:               USBEN = 0;
+09E4  966D     BCF UCON, 3, ACCESS
+775:               set_tris_a(0b11110010);
+09E6  0EF2     MOVLW 0xF2
+09E8  6E92     MOVWF TRISA, ACCESS
+776:               set_tris_b(0x00);
+09EA  0E00     MOVLW 0x0
+09EC  6E93     MOVWF TRISB, ACCESS
+777:               set_tris_c(0b11000000);
+09EE  0EC0     MOVLW 0xC0
+09F0  6E94     MOVWF TRISC, ACCESS
+778:               set_tris_d(0x00);
+09F2  0E00     MOVLW 0x0
+09F4  6E95     MOVWF TRISD, ACCESS
+779:               set_tris_e(0x00);
+09F6  6E96     MOVWF TRISE, ACCESS
+780:           
+781:               output_a(0x00);
+09F8  6A92     CLRF TRISA, ACCESS
+09FA  6A89     CLRF LATA, ACCESS
+782:               output_b(0xFF);
+09FC  6A93     CLRF TRISB, ACCESS
+09FE  688A     SETF LATB, ACCESS
+783:               output_c(0x00);
+0A00  6A94     CLRF TRISC, ACCESS
+0A02  6A8B     CLRF LATC, ACCESS
+784:               output_d(0x00);
+0A04  6A95     CLRF TRISD, ACCESS
+0A06  6A8C     CLRF LATD, ACCESS
+785:               output_e(0x00);
+0A08  6A96     CLRF TRISE, ACCESS
+0A0A  6A8D     CLRF LATE, ACCESS
+786:               output_low(PIN_B7);
+0A0C  9E93     BCF TRISB, 7, ACCESS
+0A0E  9E8A     BCF LATB, 7, ACCESS
+0A10  EF79     GOTO 0xAF2
+787:           }
+788:           
+789:           void inte_Init()
+790:           {
+791:               enable_interrupts(GLOBAL);
+0AD4  0EC0     MOVLW 0xC0
+0AD6  12F2     IORWF INTCON, F, ACCESS
+792:               enable_interrupts(INT_RDA);
+0AD8  8A9D     BSF PIE1, 5, ACCESS
+0ADA  EF7C     GOTO 0xAF8
+793:           }
+794:           
+795:           void Config_tmrs()
+796:           {
+797:               //setup_timer_1(T1_EXTERNAL|T1_DIV_BY_8);      //26.2 ms overflow
+798:               //setup_timer_1(T1_EXTERNAL|T1_DIV_BY_1| 0x8);
+799:               // T0CON=0b10000111;
+800:               //T0CON = 0b10000101; //A 1s
+801:               //T1CON = 0b11110001; //Bits 5-4: prescaler a 8
+802:           
+803:               //setup_timer_1(T1_INTERNAL|T1_DIV_BY_8);      //43.6 ms overflow
+804:               //setup_timer_0(RTCC_INTERNAL | RTCC_DIV_256); //1.4 s overflow
+805:               setup_timer_0(RTCC_INTERNAL | RTCC_DIV_128); //699 ms overflow
+0ADE  0E86     MOVLW 0x86
+0AE0  6ED5     MOVWF T0CON, ACCESS
+806:               enable_interrupts(INT_TIMER0);
+0AE2  8AF2     BSF INTCON, 5, ACCESS
+807:           
+808:               //setup_timer_1(T1_INTERNAL | T1_DIV_BY_2); //10.9 ms overflow
+809:               setup_timer_1(T1_INTERNAL | T1_DIV_BY_8); //43.6 ms overflow
+0AE4  0EB5     MOVLW 0xB5
+0AE6  6ECD     MOVWF T1CON, ACCESS
+810:               disable_interrupts(INT_TIMER1);
+0AE8  909D     BCF PIE1, 0, ACCESS
+0AEA  EF7D     GOTO 0xAFA
+811:               //set_timer0(26472);
+812:               //enable_interrupts(INT_TIMER0);
+813:           }
+814:           
+815:           void Procesos_Init() //invocado al inicializar
+816:           {
+817:               pList[0].id = 0;
+0A34  6A21     CLRF 0x21, ACCESS
+818:               pList[1].id = 1;
+0A36  0E01     MOVLW 0x1
+0A38  6E2C     MOVWF 0x2C, ACCESS
+819:               pList[2].id = 2;
+0A3A  0E02     MOVLW 0x2
+0A3C  6E37     MOVWF 0x37, ACCESS
+820:               pList[3].id = 3;
+0A3E  0E03     MOVLW 0x3
+0A40  6E42     MOVWF 0x42, ACCESS
+821:               pList[4].id = 4;
+0A42  0E04     MOVLW 0x4
+0A44  6E4D     MOVWF 0x4D, ACCESS
+822:               pList[5].id = 5;
+0A46  0E05     MOVLW 0x5
+0A48  6E58     MOVWF 0x58, ACCESS
+823:           
+824:               pList[0].estado = 2;
+0A4A  0E02     MOVLW 0x2
+0A4C  6E1D     MOVWF 0x1D, ACCESS
+825:               pList[1].estado = 0;
+0A4E  6A28     CLRF 0x28, ACCESS
+826:               pList[2].estado = 0;
+0A50  6A33     CLRF 0x33, ACCESS
+827:               pList[3].estado = 0;
+0A52  6A3E     CLRF 0x3E, ACCESS
+828:               pList[4].estado = 0;
+0A54  6A49     CLRF 0x49, ACCESS
+829:               pList[5].estado = 0;
+0A56  6A54     CLRF 0x54, ACCESS
+830:           
+831:               pList[0].di = 0x4000;
+0A58  0E40     MOVLW 0x40
+0A5A  6E18     MOVWF 0x18, ACCESS
+0A5C  6A17     CLRF pList, ACCESS
+832:               pList[0].da = 0x4000;
+0A5E  6E1C     MOVWF 0x1C, ACCESS
+0A60  6A1B     CLRF 0x1B, ACCESS
+833:               pList[0].df = 0x4900;
+0A62  0E49     MOVLW 0x49
+0A64  6E1A     MOVWF 0x1A, ACCESS
+0A66  6A19     CLRF 0x19, ACCESS
+834:           
+835:               pList[1].di = 0x1000;
+0A68  0E10     MOVLW 0x10
+0A6A  6E23     MOVWF 0x23, ACCESS
+0A6C  6A22     CLRF 0x22, ACCESS
+836:               pList[1].da = 0x1000;
+0A6E  6E27     MOVWF 0x27, ACCESS
+0A70  6A26     CLRF 0x26, ACCESS
+837:               pList[1].df = 0x1150; //
+0A72  0E11     MOVLW 0x11
+0A74  6E25     MOVWF 0x25, ACCESS
+0A76  0E50     MOVLW 0x50
+0A78  6E24     MOVWF 0x24, ACCESS
+838:           
+839:               pList[2].di = 0x1352;
+0A7A  0E13     MOVLW 0x13
+0A7C  6E2E     MOVWF 0x2E, ACCESS
+0A7E  0E52     MOVLW 0x52
+0A80  6E2D     MOVWF 0x2D, ACCESS
+840:               pList[2].da = 0x1352;
+0A82  0E13     MOVLW 0x13
+0A84  6E32     MOVWF 0x32, ACCESS
+0A86  0E52     MOVLW 0x52
+0A88  6E31     MOVWF 0x31, ACCESS
+841:               pList[2].df = 0x2000;
+0A8A  0E20     MOVLW 0x20
+0A8C  6E30     MOVWF 0x30, ACCESS
+0A8E  6A2F     CLRF 0x2F, ACCESS
+842:           
+843:               pList[3].di = 0x2010;
+0A90  6E39     MOVWF 0x39, ACCESS
+0A92  0E10     MOVLW 0x10
+0A94  6E38     MOVWF 0x38, ACCESS
+844:               pList[3].da = 0x2010;
+0A96  0E20     MOVLW 0x20
+0A98  6E3D     MOVWF 0x3D, ACCESS
+0A9A  0E10     MOVLW 0x10
+0A9C  6E3C     MOVWF 0x3C, ACCESS
+845:               pList[3].df = 0x2500;
+0A9E  0E25     MOVLW 0x25
+0AA0  6E3B     MOVWF 0x3B, ACCESS
+0AA2  6A3A     CLRF 0x3A, ACCESS
+846:           
+847:               pList[4].di = 0x2510; //
+0AA4  6E44     MOVWF 0x44, ACCESS
+0AA6  0E10     MOVLW 0x10
+0AA8  6E43     MOVWF 0x43, ACCESS
+848:               pList[4].da = 0x2510;
+0AAA  0E25     MOVLW 0x25
+0AAC  6E48     MOVWF 0x48, ACCESS
+0AAE  0E10     MOVLW 0x10
+0AB0  6E47     MOVWF 0x47, ACCESS
+849:               pList[4].df = 0x3000;
+0AB2  0E30     MOVLW 0x30
+0AB4  6E46     MOVWF 0x46, ACCESS
+0AB6  6A45     CLRF 0x45, ACCESS
+850:           
+851:               pList[5].di = 0x3010; //
+0AB8  6E4F     MOVWF 0x4F, ACCESS
+0ABA  0E10     MOVLW 0x10
+0ABC  6E4E     MOVWF 0x4E, ACCESS
+852:               pList[5].da = 0x3010;
+0ABE  0E30     MOVLW 0x30
+0AC0  6E53     MOVWF 0x53, ACCESS
+0AC2  0E10     MOVLW 0x10
+0AC4  6E52     MOVWF 0x52, ACCESS
+853:               pList[5].df = 0x3500;
+0AC6  0E35     MOVLW 0x35
+0AC8  6E51     MOVWF 0x51, ACCESS
+0ACA  6A50     CLRF 0x50, ACCESS
+854:           
+855:           
+856:           
+857:               pCount = 6;
+0ACC  0E06     MOVLW 0x6
+0ACE  6F7A     MOVWF pCount, BANKED
+0AD0  EF7B     GOTO 0xAF6
+858:           
+859:           }
+860:           
+861:           void MCU_Init()
+862:           {
+863:               cmd = 0x0;
+0AEE  6B77     CLRF cmd, BANKED
+864:               //printf("Conectado.............\n");
+865:               //putc(13);
+866:               Port_Init(); //puertos B, C y D a cero
+0AF0  D779     BRA Port_Init
+867:               //inicio_ad();
+868:               inicio_pwm();
+0AF2  D790     BRA inicio_pwm
+869:               Procesos_Init(); //Configuración de direcciones y estado
+0AF4  D79F     BRA Procesos_Init
+870:               inte_Init(); //Habilitación comunicación serial (a su cargo la variable proceso)
+0AF6  D7EE     BRA inte_Init
+871:               Config_tmrs(); //Configura el TMR0 (registro T0CON), sin habilitar las interrupciones
+0AF8  D7F2     BRA Config_tmrs
+0AFA  EFAB     GOTO 0xB56
+872:           
+873:               //lcd_init();
+874:               //lcd_gotoxy(1, 2);
+875:               //lcd_putc("\f");
+876:           }
+877:           
+878:           void main(void)
+0AFE  6AF8     CLRF TBLPTRU, ACCESS
+0B00  9ED0     BCF RCON, 7, ACCESS
+0B02  8E07     BSF 0x7, 7, ACCESS
+0B04  86B8     BSF BAUDCON, 3, ACCESS
+0B06  0EE1     MOVLW 0xE1
+0B08  6EAF     MOVWF SPBRG, ACCESS
+0B0A  0E04     MOVLW 0x4
+0B0C  6EB0     MOVWF SPBRGH, ACCESS
+0B0E  0EA6     MOVLW 0xA6
+0B10  6EAC     MOVWF TXSTA, ACCESS
+0B12  0E90     MOVLW 0x90
+0B14  6EAB     MOVWF RCSTA, ACCESS
+0B16  6B77     CLRF cmd, BANKED
+0B18  0E2D     MOVLW 0x2D
+0B1A  6F78     MOVWF speed, BANKED
+0B1C  6B79     CLRF nCount, BANKED
+0B1E  6985     SETF processIdToSend, BANKED
+0B20  50C1     MOVF ADCON1, W, ACCESS
+0B22  0BC0     ANDLW 0xC0
+0B24  090F     IORLW 0xF
+0B26  6EC1     MOVWF ADCON1, ACCESS
+0B28  0E07     MOVLW 0x7
+0B2A  6EB4     MOVWF CMCON, ACCESS
+0B2C  0E3F     MOVLW 0x3F
+0B2E  6F7B     MOVWF tabla, BANKED
+0B30  0E06     MOVLW 0x6
+0B32  6F7C     MOVWF 0x7C, BANKED
+0B34  0E5B     MOVLW 0x5B
+0B36  6F7D     MOVWF 0x7D, BANKED
+0B38  0E4F     MOVLW 0x4F
+0B3A  6F7E     MOVWF 0x7E, BANKED
+0B3C  0E66     MOVLW 0x66
+0B3E  6F7F     MOVWF 0x7F, BANKED
+0B40  0E6D     MOVLW 0x6D
+0B42  6F80     MOVWF PORTA, BANKED
+0B44  0E7D     MOVLW 0x7D
+0B46  6F81     MOVWF PORTB, BANKED
+0B48  0E07     MOVLW 0x7
+0B4A  6F82     MOVWF PORTC, BANKED
+0B4C  0E7F     MOVLW 0x7F
+0B4E  6F83     MOVWF PORTD, BANKED
+0B50  0E67     MOVLW 0x67
+0B52  6F84     MOVWF PORTE, BANKED
+879:           {
+880:               MCU_Init();
+0B54  D7CC     BRA MCU_Init
+881:           
+882:               output_high(PIN_C1);
+0B56  9294     BCF TRISC, 1, ACCESS
+0B58  828B     BSF LATC, 1, ACCESS
+883:           
+884:               /*while(1)
+885:               {
+886:                   printf("- os;");
+887:               }*/
+888:               //Task2();
+889:               //lcd_gotoxy(2, 2);
+890:               //printf(lcd_putc, "#INICIO;");
+891:           
+892:           #asm
+893:               goto 0x4000 //El sistema permanece ejecutando este bucle
+0B5A  EF00     GOTO 0x4000
+894:           #endasm
+895:           }
+896:           
+0B5E  0003     SLEEP
+897:           int IsLoaded(int pID)
+898:           {
+899:               int i;
+900:               for (i = 0; i < nCount; i++)
+05EC  6BA2     CLRF i, BANKED
+05EE  5179     MOVF nCount, W, BANKED
+05F0  5DA2     SUBWF i, W, BANKED
+05F2  E20F     BC 0x612
+901:               {
+902:                   if (pPila[i] == pID)
+05F4  6A03     CLRF 0x3, ACCESS
+05F6  51A2     MOVF i, W, BANKED
+05F8  0F6F     ADDLW 0x6F
+05FA  6EE9     MOVWF FSR0L, ACCESS
+05FC  0E00     MOVLW 0x0
+05FE  2003     ADDWFC 0x3, W, ACCESS
+0600  6EEA     MOVWF FSR0H, ACCESS
+0602  51A1     MOVF pID, W, BANKED
+0604  5CEF     SUBWF INDF0, W, ACCESS
+0606  E103     BNZ 0x60E
+903:                   {
+904:                       return i;
+0608  C0A2     MOVFF i, 0x1
+060C  D004     BRA 0x616
+905:                   }
+060E  2BA2     INCF i, F, BANKED
+0610  D7EE     BRA 0x5EE
+906:               }
+907:               return -1;
+0612  0EFF     MOVLW 0xFF
+0614  6E01     MOVWF 0x1, ACCESS
+0616  0012     RETURN 0
+908:           }
+909:           
+910:           void LoadProcess(int pID)
+911:           {
+912:               // Añadir a la Pila de procesos
+913:               pPila[nCount] = pID;
+0618  6A03     CLRF 0x3, ACCESS
+061A  5179     MOVF nCount, W, BANKED
+061C  0F6F     ADDLW 0x6F
+061E  6EE9     MOVWF FSR0L, ACCESS
+0620  0E00     MOVLW 0x0
+0622  2003     ADDWFC 0x3, W, ACCESS
+0624  6EEA     MOVWF FSR0H, ACCESS
+0626  C0A1     MOVFF pID, INDF0
+914:               // Set status: 1, Cargado.
+915:               pList[pID].estado = 1;
+062A  51A1     MOVF pID, W, BANKED
+062C  0D0B     MULLW 0xB
+062E  50F3     MOVF PRODL, W, ACCESS
+0630  6BA3     CLRF i, BANKED
+0632  6FA2     MOVWF i, BANKED
+0634  0E06     MOVLW 0x6
+0636  25A2     ADDWF i, W, BANKED
+0638  6E01     MOVWF 0x1, ACCESS
+063A  0E00     MOVLW 0x0
+063C  21A3     ADDWFC i, W, BANKED
+063E  6E03     MOVWF 0x3, ACCESS
+0640  5001     MOVF 0x1, W, ACCESS
+0642  0F17     ADDLW 0x17
+0644  6EE9     MOVWF FSR0L, ACCESS
+0646  0E00     MOVLW 0x0
+0648  2003     ADDWFC 0x3, W, ACCESS
+064A  6EEA     MOVWF FSR0H, ACCESS
+064C  0E01     MOVLW 0x1
+064E  6EEF     MOVWF INDF0, ACCESS
+916:               // Notificar cambio
+917:               //printf("L%i;", pID);
+918:               printf("$%i %Lu %i;", pList[pID].id, pList[pID].da, pList[pID].estado);
+0650  51A1     MOVF pID, W, BANKED
+0652  0D0B     MULLW 0xB
+0654  50F3     MOVF PRODL, W, ACCESS
+0656  6BA3     CLRF i, BANKED
+0658  6FA2     MOVWF i, BANKED
+065A  0E0A     MOVLW 0xA
+065C  25A2     ADDWF i, W, BANKED
+065E  6E01     MOVWF 0x1, ACCESS
+0660  0E00     MOVLW 0x0
+0662  21A3     ADDWFC i, W, BANKED
+0664  6E03     MOVWF 0x3, ACCESS
+0666  5001     MOVF 0x1, W, ACCESS
+0668  0F17     ADDLW 0x17
+066A  6EE9     MOVWF FSR0L, ACCESS
+066C  0E00     MOVLW 0x0
+066E  2003     ADDWFC 0x3, W, ACCESS
+0670  6EEA     MOVWF FSR0H, ACCESS
+0672  CFEF     MOVFF INDF0, i
+0676  51A1     MOVF pID, W, BANKED
+0678  0D0B     MULLW 0xB
+067A  50F3     MOVF PRODL, W, ACCESS
+067C  6BA4     CLRF 0xA4, BANKED
+067E  6FA3     MOVWF i, BANKED
+0680  0E04     MOVLW 0x4
+0682  25A3     ADDWF i, W, BANKED
+0684  6E01     MOVWF 0x1, ACCESS
+0686  0E00     MOVLW 0x0
+0688  21A4     ADDWFC 0xA4, W, BANKED
+068A  6E03     MOVWF 0x3, ACCESS
+068C  5001     MOVF 0x1, W, ACCESS
+068E  0F17     ADDLW 0x17
+0690  6EE9     MOVWF FSR0L, ACCESS
+0692  0E00     MOVLW 0x0
+0694  2003     ADDWFC 0x3, W, ACCESS
+0696  6EEA     MOVWF FSR0H, ACCESS
+0698  CFEC     MOVFF PREINC0, 0xA4
+069C  52ED     MOVF POSTDEC0, F, ACCESS
+069E  CFEF     MOVFF INDF0, i
+06A2  51A1     MOVF pID, W, BANKED
+06A4  0D0B     MULLW 0xB
+06A6  50F3     MOVF PRODL, W, ACCESS
+06A8  6BA6     CLRF 0xA6, BANKED
+06AA  6FA5     MOVWF 0xA5, BANKED
+06AC  0E06     MOVLW 0x6
+06AE  25A5     ADDWF 0xA5, W, BANKED
+06B0  6E01     MOVWF 0x1, ACCESS
+06B2  0E00     MOVLW 0x0
+06B4  21A6     ADDWFC 0xA6, W, BANKED
+06B6  6E03     MOVWF 0x3, ACCESS
+06B8  5001     MOVF 0x1, W, ACCESS
+06BA  0F17     ADDLW 0x17
+06BC  6EE9     MOVWF FSR0L, ACCESS
+06BE  0E00     MOVLW 0x0
+06C0  2003     ADDWFC 0x3, W, ACCESS
+06C2  6EEA     MOVWF FSR0H, ACCESS
+06C4  CFEF     MOVFF INDF0, 0xA5
+06C8  0E24     MOVLW 0x24
+06CA  A89E     BTFSS PIR1, 4, ACCESS
+06CC  D7FE     BRA 0x6CA
+06CE  6EAD     MOVWF TXREG, ACCESS
+06D0  6A16     CLRF 0x16, ACCESS
+06D2  BEF2     BTFSC INTCON, 7, ACCESS
+06D4  8E16     BSF 0x16, 7, ACCESS
+06D6  9EF2     BCF INTCON, 7, ACCESS
+06D8  C0A2     MOVFF i, _invar3
+06DC  0E18     MOVLW 0x18
+06DE  6FA9     MOVWF _invar4, BANKED
+06E0  DCFA     RCALL PRINTF_D_9600_31766_31767
+06E2  BE16     BTFSC 0x16, 7, ACCESS
+06E4  8EF2     BSF INTCON, 7, ACCESS
+06E6  0E20     MOVLW 0x20
+06E8  A89E     BTFSS PIR1, 4, ACCESS
+06EA  D7FE     BRA 0x6E8
+06EC  6EAD     MOVWF TXREG, ACCESS
+06EE  0E10     MOVLW 0x10
+06F0  6EE9     MOVWF FSR0L, ACCESS
+06F2  6A16     CLRF 0x16, ACCESS
+06F4  BEF2     BTFSC INTCON, 7, ACCESS
+06F6  8E16     BSF 0x16, 7, ACCESS
+06F8  9EF2     BCF INTCON, 7, ACCESS
+06FA  C0A4     MOVFF 0xA4, _invar4
+06FE  C0A3     MOVFF i, _invar3
+0702  DD42     RCALL PRINTF_LU_9600_31766_31767
+0704  BE16     BTFSC 0x16, 7, ACCESS
+0706  8EF2     BSF INTCON, 7, ACCESS
+0708  0E20     MOVLW 0x20
+070A  A89E     BTFSS PIR1, 4, ACCESS
+070C  D7FE     BRA 0x70A
+070E  6EAD     MOVWF TXREG, ACCESS
+0710  6A16     CLRF 0x16, ACCESS
+0712  BEF2     BTFSC INTCON, 7, ACCESS
+0714  8E16     BSF 0x16, 7, ACCESS
+0716  9EF2     BCF INTCON, 7, ACCESS
+0718  C0A5     MOVFF 0xA5, _invar3
+071C  0E18     MOVLW 0x18
+071E  6FA9     MOVWF _invar4, BANKED
+0720  DCDA     RCALL PRINTF_D_9600_31766_31767
+0722  BE16     BTFSC 0x16, 7, ACCESS
+0724  8EF2     BSF INTCON, 7, ACCESS
+0726  0E3B     MOVLW 0x3B
+0728  A89E     BTFSS PIR1, 4, ACCESS
+072A  D7FE     BRA 0x728
+072C  6EAD     MOVWF TXREG, ACCESS
+919:               // Se incrementa el numero de procesos
+920:               nCount++;
+072E  2B79     INCF nCount, F, BANKED
+0730  EF61     GOTO 0x40C2
+921:           }
+922:           
+923:           void UnLoadProcess(int pID, int index)
+924:           {
+925:               // Se retira el proces0 de la Pila
+926:               int i;
+927:               for (i = index; i < nCount - 1; i++)
+0734  C0A2     MOVFF i, i
+0738  0E01     MOVLW 0x1
+073A  5D79     SUBWF nCount, W, BANKED
+073C  5DA3     SUBWF i, W, BANKED
+073E  E21A     BC 0x774
+928:               {
+929:                   pPila[i] = pPila[i + 1];
+0740  6A03     CLRF 0x3, ACCESS
+0742  51A3     MOVF i, W, BANKED
+0744  0F6F     ADDLW 0x6F
+0746  6E01     MOVWF 0x1, ACCESS
+0748  0E00     MOVLW 0x0
+074A  2203     ADDWFC 0x3, F, ACCESS
+074C  C003     MOVFF 0x3, 0xA5
+0750  0E01     MOVLW 0x1
+0752  25A3     ADDWF i, W, BANKED
+0754  6A03     CLRF 0x3, ACCESS
+0756  0F6F     ADDLW 0x6F
+0758  6EE9     MOVWF FSR0L, ACCESS
+075A  0E00     MOVLW 0x0
+075C  2003     ADDWFC 0x3, W, ACCESS
+075E  6EEA     MOVWF FSR0H, ACCESS
+0760  CFEF     MOVFF INDF0, 0xA6
+0764  C0A5     MOVFF 0xA5, FSR0H
+0768  C001     MOVFF 0x1, FSR0L
+076C  C0A6     MOVFF 0xA6, INDF0
+0770  2BA3     INCF i, F, BANKED
+0772  D7E2     BRA 0x738
+930:               }
+931:               // Set status: 1, Cargado.
+932:               pList[pID].estado = 0;
+0774  51A1     MOVF pID, W, BANKED
+0776  0D0B     MULLW 0xB
+0778  50F3     MOVF PRODL, W, ACCESS
+077A  6BA5     CLRF 0xA5, BANKED
+077C  6FA4     MOVWF 0xA4, BANKED
+077E  0E06     MOVLW 0x6
+0780  25A4     ADDWF 0xA4, W, BANKED
+0782  6E01     MOVWF 0x1, ACCESS
+0784  0E00     MOVLW 0x0
+0786  21A5     ADDWFC 0xA5, W, BANKED
+0788  6E03     MOVWF 0x3, ACCESS
+078A  5001     MOVF 0x1, W, ACCESS
+078C  0F17     ADDLW 0x17
+078E  6EE9     MOVWF FSR0L, ACCESS
+0790  0E00     MOVLW 0x0
+0792  2003     ADDWFC 0x3, W, ACCESS
+0794  6EEA     MOVWF FSR0H, ACCESS
+0796  6AEF     CLRF INDF0, ACCESS
+933:               // Reset
+934:               pList[pID].da = pList[pID].di;
+0798  51A1     MOVF pID, W, BANKED
+079A  0D0B     MULLW 0xB
+079C  50F3     MOVF PRODL, W, ACCESS
+079E  6BA5     CLRF 0xA5, BANKED
+07A0  6FA4     MOVWF 0xA4, BANKED
+07A2  0E04     MOVLW 0x4
+07A4  25A4     ADDWF 0xA4, W, BANKED
+07A6  6E01     MOVWF 0x1, ACCESS
+07A8  0E00     MOVLW 0x0
+07AA  21A5     ADDWFC 0xA5, W, BANKED
+07AC  6E03     MOVWF 0x3, ACCESS
+07AE  5001     MOVF 0x1, W, ACCESS
+07B0  0F17     ADDLW 0x17
+07B2  6E01     MOVWF 0x1, ACCESS
+07B4  0E00     MOVLW 0x0
+07B6  2203     ADDWFC 0x3, F, ACCESS
+07B8  C003     MOVFF 0x3, 0xA5
+07BC  51A1     MOVF pID, W, BANKED
+07BE  0D0B     MULLW 0xB
+07C0  50F3     MOVF PRODL, W, ACCESS
+07C2  6BA7     CLRF 0xA7, BANKED
+07C4  6FA6     MOVWF 0xA6, BANKED
+07C6  0E17     MOVLW 0x17
+07C8  25A6     ADDWF 0xA6, W, BANKED
+07CA  6EE9     MOVWF FSR0L, ACCESS
+07CC  0E00     MOVLW 0x0
+07CE  21A7     ADDWFC 0xA7, W, BANKED
+07D0  6EEA     MOVWF FSR0H, ACCESS
+07D2  CFEC     MOVFF PREINC0, 0x3
+07D6  52ED     MOVF POSTDEC0, F, ACCESS
+07D8  CFEF     MOVFF INDF0, _invar3
+07DC  C0A5     MOVFF 0xA5, FSR0H
+07E0  C001     MOVFF 0x1, FSR0L
+07E4  C003     MOVFF 0x3, PREINC0
+07E8  52ED     MOVF POSTDEC0, F, ACCESS
+07EA  C0A8     MOVFF _invar3, INDF0
+935:               // Notificar cambio
+936:           
+937:               // Apagar el sistema
+938:               switch (pID)
+07EE  51A1     MOVF pID, W, BANKED
+07F0  0FFA     ADDLW 0xFA
+07F2  E22C     BC 0x84C
+07F4  0F06     ADDLW 0x6
+07F6  EF99     GOTO 0x932
+939:               {
+940:                   case 0:
+941:           
+942:                       break;
+07FA  D028     BRA 0x84C
+943:                   case 1:
+944:                   {
+945:                       output_low(PIN_C0);
+07FC  9094     BCF TRISC, 0, ACCESS
+07FE  908B     BCF LATC, 0, ACCESS
+946:                       output_low(PIN_D3);
+0800  9695     BCF TRISD, 3, ACCESS
+0802  968C     BCF LATD, 3, ACCESS
+947:                       output_low(PIN_A2);
+0804  9492     BCF TRISA, 2, ACCESS
+0806  9489     BCF LATA, 2, ACCESS
+948:                       output_low(PIN_A3);
+0808  9692     BCF TRISA, 3, ACCESS
+080A  9689     BCF LATA, 3, ACCESS
+949:                       nCount--;
+080C  0779     DECF nCount, F, BANKED
+950:                   }
+951:                       break;
+080E  D01E     BRA 0x84C
+952:                   case 2:
+953:                   {
+954:                       output_b(0xff);
+0810  6A93     CLRF TRISB, ACCESS
+0812  688A     SETF LATB, ACCESS
+955:                       nCount--;
+0814  0779     DECF nCount, F, BANKED
+956:                   }
+957:                       break;
+0816  D01A     BRA 0x84C
+958:                   case 3:
+959:                   {
+960:                       CCPR1L = 0x00;
+0818  6ABE     CLRF CCPR1L, ACCESS
+961:                       CCP5 = 0;
+081A  9ABD     BCF CCP1CON, 5, ACCESS
+962:                       CCP4 = 0;
+081C  98BD     BCF CCP1CON, 4, ACCESS
+963:                       nCount--;
+081E  0779     DECF nCount, F, BANKED
+964:                       break;
+0820  D015     BRA 0x84C
+965:                   }
+966:                   case 4:
+967:                   {
+968:                       output_low(PIN_D1);
+0822  9295     BCF TRISD, 1, ACCESS
+0824  928C     BCF LATD, 1, ACCESS
+969:                       output_low(PIN_D2);
+0826  9495     BCF TRISD, 2, ACCESS
+0828  948C     BCF LATD, 2, ACCESS
+970:                       output_low(PIN_D4);
+082A  9895     BCF TRISD, 4, ACCESS
+082C  988C     BCF LATD, 4, ACCESS
+971:                       output_low(PIN_D5);
+082E  9A95     BCF TRISD, 5, ACCESS
+0830  9A8C     BCF LATD, 5, ACCESS
+972:                       output_low(PIN_D6);
+0832  9C95     BCF TRISD, 6, ACCESS
+0834  9C8C     BCF LATD, 6, ACCESS
+973:                       output_low(PIN_D7);
+0836  9E95     BCF TRISD, 7, ACCESS
+0838  9E8C     BCF LATD, 7, ACCESS
+974:                       nCount--;
+083A  0779     DECF nCount, F, BANKED
+975:                   }
+976:                       break;
+083C  D007     BRA 0x84C
+977:                   case 5:
+978:                   {
+979:                       output_low(PIN_E0);
+083E  9096     BCF TRISE, 0, ACCESS
+0840  908D     BCF LATE, 0, ACCESS
+980:                       output_low(PIN_E1);
+0842  9296     BCF TRISE, 1, ACCESS
+0844  928D     BCF LATE, 1, ACCESS
+981:                       output_low(PIN_E2);
+0846  9496     BCF TRISE, 2, ACCESS
+0848  948D     BCF LATE, 2, ACCESS
+982:                       nCount--;
+084A  0779     DECF nCount, F, BANKED
+983:                   }
+984:                       break;
+985:               }
+986:               //printf("U%i %i;", pID, index);
+987:               printf("$%i %Lu %i;", pList[pID].id, pList[pID].da, pList[pID].estado);
+084C  51A1     MOVF pID, W, BANKED
+084E  0D0B     MULLW 0xB
+0850  50F3     MOVF PRODL, W, ACCESS
+0852  6BA5     CLRF 0xA5, BANKED
+0854  6FA4     MOVWF 0xA4, BANKED
+0856  0E0A     MOVLW 0xA
+0858  25A4     ADDWF 0xA4, W, BANKED
+085A  6E01     MOVWF 0x1, ACCESS
+085C  0E00     MOVLW 0x0
+085E  21A5     ADDWFC 0xA5, W, BANKED
+0860  6E03     MOVWF 0x3, ACCESS
+0862  5001     MOVF 0x1, W, ACCESS
+0864  0F17     ADDLW 0x17
+0866  6EE9     MOVWF FSR0L, ACCESS
+0868  0E00     MOVLW 0x0
+086A  2003     ADDWFC 0x3, W, ACCESS
+086C  6EEA     MOVWF FSR0H, ACCESS
+086E  CFEF     MOVFF INDF0, 0xA4
+0872  51A1     MOVF pID, W, BANKED
+0874  0D0B     MULLW 0xB
+0876  50F3     MOVF PRODL, W, ACCESS
+0878  6BA6     CLRF 0xA6, BANKED
+087A  6FA5     MOVWF 0xA5, BANKED
+087C  0E04     MOVLW 0x4
+087E  25A5     ADDWF 0xA5, W, BANKED
+0880  6E01     MOVWF 0x1, ACCESS
+0882  0E00     MOVLW 0x0
+0884  21A6     ADDWFC 0xA6, W, BANKED
+0886  6E03     MOVWF 0x3, ACCESS
+0888  5001     MOVF 0x1, W, ACCESS
+088A  0F17     ADDLW 0x17
+088C  6EE9     MOVWF FSR0L, ACCESS
+088E  0E00     MOVLW 0x0
+0890  2003     ADDWFC 0x3, W, ACCESS
+0892  6EEA     MOVWF FSR0H, ACCESS
+0894  CFEC     MOVFF PREINC0, 0xA6
+0898  52ED     MOVF POSTDEC0, F, ACCESS
+089A  CFEF     MOVFF INDF0, 0xA5
+089E  51A1     MOVF pID, W, BANKED
+08A0  0D0B     MULLW 0xB
+08A2  50F3     MOVF PRODL, W, ACCESS
+08A4  6BA8     CLRF _invar3, BANKED
+08A6  6FA7     MOVWF 0xA7, BANKED
+08A8  0E06     MOVLW 0x6
+08AA  25A7     ADDWF 0xA7, W, BANKED
+08AC  6E01     MOVWF 0x1, ACCESS
+08AE  0E00     MOVLW 0x0
+08B0  21A8     ADDWFC _invar3, W, BANKED
+08B2  6E03     MOVWF 0x3, ACCESS
+08B4  5001     MOVF 0x1, W, ACCESS
+08B6  0F17     ADDLW 0x17
+08B8  6EE9     MOVWF FSR0L, ACCESS
+08BA  0E00     MOVLW 0x0
+08BC  2003     ADDWFC 0x3, W, ACCESS
+08BE  6EEA     MOVWF FSR0H, ACCESS
+08C0  CFEF     MOVFF INDF0, 0xA7
+08C4  0E24     MOVLW 0x24
+08C6  A89E     BTFSS PIR1, 4, ACCESS
+08C8  D7FE     BRA 0x8C6
+08CA  6EAD     MOVWF TXREG, ACCESS
+08CC  6A16     CLRF 0x16, ACCESS
+08CE  BEF2     BTFSC INTCON, 7, ACCESS
+08D0  8E16     BSF 0x16, 7, ACCESS
+08D2  9EF2     BCF INTCON, 7, ACCESS
+08D4  C0A4     MOVFF 0xA4, _invar3
+08D8  0E18     MOVLW 0x18
+08DA  6FA9     MOVWF _invar4, BANKED
+08DC  EC6B     CALL 0xD6, 0
+08E0  BE16     BTFSC 0x16, 7, ACCESS
+08E2  8EF2     BSF INTCON, 7, ACCESS
+08E4  0E20     MOVLW 0x20
+08E6  A89E     BTFSS PIR1, 4, ACCESS
+08E8  D7FE     BRA 0x8E6
+08EA  6EAD     MOVWF TXREG, ACCESS
+08EC  0E10     MOVLW 0x10
+08EE  6EE9     MOVWF FSR0L, ACCESS
+08F0  6A16     CLRF 0x16, ACCESS
+08F2  BEF2     BTFSC INTCON, 7, ACCESS
+08F4  8E16     BSF 0x16, 7, ACCESS
+08F6  9EF2     BCF INTCON, 7, ACCESS
+08F8  C0A6     MOVFF 0xA6, _invar4
+08FC  C0A5     MOVFF 0xA5, _invar3
+0900  DC43     RCALL PRINTF_LU_9600_31766_31767
+0902  BE16     BTFSC 0x16, 7, ACCESS
+0904  8EF2     BSF INTCON, 7, ACCESS
+0906  0E20     MOVLW 0x20
+0908  A89E     BTFSS PIR1, 4, ACCESS
+090A  D7FE     BRA 0x908
+090C  6EAD     MOVWF TXREG, ACCESS
+090E  6A16     CLRF 0x16, ACCESS
+0910  BEF2     BTFSC INTCON, 7, ACCESS
+0912  8E16     BSF 0x16, 7, ACCESS
+0914  9EF2     BCF INTCON, 7, ACCESS
+0916  C0A7     MOVFF 0xA7, _invar3
+091A  0E18     MOVLW 0x18
+091C  6FA9     MOVWF _invar4, BANKED
+091E  EC6B     CALL 0xD6, 0
+0922  BE16     BTFSC 0x16, 7, ACCESS
+0924  8EF2     BSF INTCON, 7, ACCESS
+0926  0E3B     MOVLW 0x3B
+0928  A89E     BTFSS PIR1, 4, ACCESS
+092A  D7FE     BRA 0x928
+092C  6EAD     MOVWF TXREG, ACCESS
+092E  EF72     GOTO 0x40E4
+988:               // Se incrementa el numero de procesos
+989:           
+990:           
+991:           }
+992:           
+993:           
+994:           // Up to 10
+995:           
+996:           // [xx]
+997:           //
+998:           // 0b00001111
+999:           // 0b00xxxxxx [00]: None
+1000:          // 0b01xxxxxx [01]: Load
+1001:          // 0b10xxxxxx [10]: UnLoad
+1002:          // 0b11xxxxxx [11]: Read Quantum
+1003:          
+1004:          //0bxx[0-15]xx: 15 procesos admitidos
+1005:          // 0bxx0000xx [0000]: System
+1006:          // 0bxx0001xx [0001]: P1
+1007:          // 0bxx0010xx [0010]: P2
+1008:          // 0bxx0011xx [0011]: P3
+1009:          // 0bxx0100xx [0100]: P4
+1010:          #ORG 0x4000, 0x4900
+1011:          
+1012:          void Inicio_SO()
+1013:          {
+1014:              int command, process, other;
+1015:          
+1016:              while (TRUE)
+1017:              {
+1018:                  //XXYYYYUU
+1019:                  //command = (cmd) & 0b00000011;
+1020:                  //process = (cmd >> 2) & 0b00001111;
+1021:                  //other = (cmd >> 6) & 0b00000011;
+1022:                  output_toggle(PIN_D0);
+4000  9095     BCF TRISD, 0, ACCESS
+4002  708C     BTG LATD, 0, ACCESS
+1023:                  //OUTPUT_TOGGLE(PIND_D0);
+1024:                  //printf("-os;");
+1025:                  if (cmd != 0x00)
+4004  5377     MOVF cmd, F, BANKED
+4006  B4D8     BTFSC STATUS, 2, ACCESS
+4008  D070     BRA 0x40EA
+1026:                  {
+1027:          
+1028:          
+1029:                      int gol;
+1030:                      gol = 0;
+400A  6B9F     CLRF gol, BANKED
+1031:          
+1032:                      switch (cmd)
+400C  0E31     MOVLW 0x31
+400E  5D77     SUBWF cmd, W, BANKED
+4010  0FEB     ADDLW 0xEB
+4012  E241     BC 0x4096
+4014  0F15     ADDLW 0x15
+4016  EFB5     GOTO 0x96A
+1033:                      {
+1034:                          case '1':
+1035:          
+1036:                              gol = 1;
+401A  0E01     MOVLW 0x1
+401C  6F9F     MOVWF gol, BANKED
+1037:                              command = 1;
+401E  6F9C     MOVWF vk1, BANKED
+1038:                              process = 1;
+4020  6F9D     MOVWF process, BANKED
+1039:                              break;
+4022  D039     BRA 0x4096
+1040:          
+1041:          
+1042:                          case '2':
+1043:          
+1044:                              gol = 1;
+4024  0E01     MOVLW 0x1
+4026  6F9F     MOVWF gol, BANKED
+1045:                              command = 1;
+4028  6F9C     MOVWF vk1, BANKED
+1046:                              process = 2;
+402A  0E02     MOVLW 0x2
+402C  6F9D     MOVWF process, BANKED
+1047:                              break;
+402E  D033     BRA 0x4096
+1048:          
+1049:          
+1050:                          case '3':
+1051:          
+1052:                              gol = 1;
+4030  0E01     MOVLW 0x1
+4032  6F9F     MOVWF gol, BANKED
+1053:                              command = 1;
+4034  6F9C     MOVWF vk1, BANKED
+1054:                              process = 3;
+4036  0E03     MOVLW 0x3
+4038  6F9D     MOVWF process, BANKED
+1055:                              break;
+403A  D02D     BRA 0x4096
+1056:          
+1057:          
+1058:                          case '4':
+1059:          
+1060:                              gol = 1;
+403C  0E01     MOVLW 0x1
+403E  6F9F     MOVWF gol, BANKED
+1061:                              command = 1;
+4040  6F9C     MOVWF vk1, BANKED
+1062:                              process = 4;
+4042  0E04     MOVLW 0x4
+4044  6F9D     MOVWF process, BANKED
+1063:                              break;
+4046  D027     BRA 0x4096
+1064:          
+1065:          
+1066:                          case '5':
+1067:          
+1068:                              gol = 1;
+4048  0E01     MOVLW 0x1
+404A  6F9F     MOVWF gol, BANKED
+1069:                              command = 1;
+404C  6F9C     MOVWF vk1, BANKED
+1070:                              process = 5;
+404E  0E05     MOVLW 0x5
+4050  6F9D     MOVWF process, BANKED
+1071:                              break;
+4052  D021     BRA 0x4096
+1072:          
+1073:          
+1074:                          case 'A':
+1075:          
+1076:                              gol = 1;
+4054  0E01     MOVLW 0x1
+4056  6F9F     MOVWF gol, BANKED
+1077:                              command = 2;
+4058  0E02     MOVLW 0x2
+405A  6F9C     MOVWF vk1, BANKED
+1078:                              process = 1;
+405C  0E01     MOVLW 0x1
+405E  6F9D     MOVWF process, BANKED
+1079:                              break;
+4060  D01A     BRA 0x4096
+1080:          
+1081:          
+1082:                          case 'B':
+1083:          
+1084:                              gol = 1;
+4062  0E01     MOVLW 0x1
+4064  6F9F     MOVWF gol, BANKED
+1085:                              command = 2;
+4066  0E02     MOVLW 0x2
+4068  6F9C     MOVWF vk1, BANKED
+1086:                              process = 2;
+406A  6F9D     MOVWF process, BANKED
+1087:                              break;
+406C  D014     BRA 0x4096
+1088:          
+1089:          
+1090:                          case 'C':
+1091:          
+1092:                              gol = 1;
+406E  0E01     MOVLW 0x1
+4070  6F9F     MOVWF gol, BANKED
+1093:                              command = 2;
+4072  0E02     MOVLW 0x2
+4074  6F9C     MOVWF vk1, BANKED
+1094:                              process = 3;
+4076  0E03     MOVLW 0x3
+4078  6F9D     MOVWF process, BANKED
+1095:                              break;
+407A  D00D     BRA 0x4096
+1096:          
+1097:          
+1098:                          case 'D':
+1099:          
+1100:                              gol = 1;
+407C  0E01     MOVLW 0x1
+407E  6F9F     MOVWF gol, BANKED
+1101:                              command = 2;
+4080  0E02     MOVLW 0x2
+4082  6F9C     MOVWF vk1, BANKED
+1102:                              process = 4;
+4084  0E04     MOVLW 0x4
+4086  6F9D     MOVWF process, BANKED
+1103:                              break;
+4088  D006     BRA 0x4096
+1104:          
+1105:          
+1106:                          case 'E':
+1107:          
+1108:                              gol = 1;
+408A  0E01     MOVLW 0x1
+408C  6F9F     MOVWF gol, BANKED
+1109:                              command = 2;
+408E  0E02     MOVLW 0x2
+4090  6F9C     MOVWF vk1, BANKED
+1110:                              process = 5;
+4092  0E05     MOVLW 0x5
+4094  6F9D     MOVWF process, BANKED
+1111:                              break;
+1112:          
+1113:          
+1114:                      }
+1115:          
+1116:                      if (gol == 1)
+4096  2D9F     DECFSZ gol, W, BANKED
+4098  D028     BRA 0x40EA
+1117:                      {
+1118:                          switch (command)
+409A  519C     MOVF vk1, W, BANKED
+409C  0FFC     ADDLW 0xFC
+409E  E224     BC 0x40E8
+40A0  0F04     ADDLW 0x4
+40A2  EFDC     GOTO 0x9B8
+1119:                          {
+1120:                                  // None
+1121:                              case 0:
+1122:                                  cmd = 0x00;
+40A6  6B77     CLRF cmd, BANKED
+1123:                                  break;
+40A8  D01F     BRA 0x40E8
+1124:                                  // Load
+1125:                              case 1:
+1126:                                  cmd = 0x00;
+40AA  6B77     CLRF cmd, BANKED
+1127:          
+1128:                                  // Proceso no cargado
+1129:                                  if (IsLoaded(process) == -1)
+40AC  C09D     MOVFF process, pID
+40B0  ECF6     CALL 0x5EC, 0
+40B4  5001     MOVF 0x1, W, ACCESS
+40B6  08FF     SUBLW 0xFF
+40B8  E104     BNZ 0x40C2
+1130:                                  {
+1131:                                      LoadProcess(process);
+40BA  C09D     MOVFF process, pID
+40BE  EF0C     GOTO 0x618
+1132:                                  }
+1133:          
+1134:                                  break;
+40C2  D012     BRA 0x40E8
+1135:                                  // UnLoad
+1136:                              case 2:
+1137:                                  //printf("#2;");
+1138:          
+1139:                                  cmd = 0x00;
+40C4  6B77     CLRF cmd, BANKED
+1140:          
+1141:          
+1142:                                  // Proceso cargado
+1143:                                  int indexProcess = IsLoaded(process);
+40C6  C09D     MOVFF process, pID
+40CA  ECF6     CALL 0x5EC, 0
+40CE  C001     MOVFF 0x1, t23
+1144:                                  if (indexProcess != -1)
+40D2  51A0     MOVF t23, W, BANKED
+40D4  08FF     SUBLW 0xFF
+40D6  E006     BZ 0x40E4
+1145:                                  {
+1146:                                      UnLoadProcess(process, indexProcess);
+40D8  C09D     MOVFF process, pID
+40DC  C0A0     MOVFF t23, i
+40E0  EF9A     GOTO 0x734
+1147:                                  }
+1148:          
+1149:                                  break;
+40E4  D001     BRA 0x40E8
+1150:                                  // None
+1151:                              case 3:
+1152:                                  cmd = 0x00;
+40E6  6B77     CLRF cmd, BANKED
+1153:                                  break;
+1154:                          }
+1155:                          cmd = 0x00;
+40E8  6B77     CLRF cmd, BANKED
+1156:                      }
+1157:                  }
+1158:                  //activar_timer();
+1159:                  if (nCount > 0)
+40EA  5379     MOVF nCount, F, BANKED
+40EC  B4D8     BTFSC STATUS, 2, ACCESS
+40EE  D0BD     BRA 0x426A
+1160:                  {
+1161:                      desactivar_timer();
+40F0  ECA1     CALL 0x342, 0
+1162:          
+1163:                      //int est;
+1164:                      //est = pList[pPila[0]].estado;
+1165:                      //pList[pPila[0]].estado = 2;
+1166:          
+1167:          
+1168:                      if (pList[pPila[0]].estado == 1)
+40F4  516F     MOVF pPila, W, BANKED
+40F6  0D0B     MULLW 0xB
+40F8  50F3     MOVF PRODL, W, ACCESS
+40FA  6BA2     CLRF i, BANKED
+40FC  6FA1     MOVWF pID, BANKED
+40FE  0E06     MOVLW 0x6
+4100  25A1     ADDWF pID, W, BANKED
+4102  6E01     MOVWF 0x1, ACCESS
+4104  0E00     MOVLW 0x0
+4106  21A2     ADDWFC i, W, BANKED
+4108  6E03     MOVWF 0x3, ACCESS
+410A  5001     MOVF 0x1, W, ACCESS
+410C  0F17     ADDLW 0x17
+410E  6EE9     MOVWF FSR0L, ACCESS
+4110  0E00     MOVLW 0x0
+4112  2003     ADDWFC 0x3, W, ACCESS
+4114  6EEA     MOVWF FSR0H, ACCESS
+4116  2CEF     DECFSZ INDF0, W, ACCESS
+4118  D02B     BRA 0x4170
+1169:                      {
+1170:                          pList[pPila[0]].estado = 2;
+411A  516F     MOVF pPila, W, BANKED
+411C  0D0B     MULLW 0xB
+411E  50F3     MOVF PRODL, W, ACCESS
+4120  6BA2     CLRF i, BANKED
+4122  6FA1     MOVWF pID, BANKED
+4124  0E06     MOVLW 0x6
+4126  25A1     ADDWF pID, W, BANKED
+4128  6E01     MOVWF 0x1, ACCESS
+412A  0E00     MOVLW 0x0
+412C  21A2     ADDWFC i, W, BANKED
+412E  6E03     MOVWF 0x3, ACCESS
+4130  5001     MOVF 0x1, W, ACCESS
+4132  0F17     ADDLW 0x17
+4134  6EE9     MOVWF FSR0L, ACCESS
+4136  0E00     MOVLW 0x0
+4138  2003     ADDWFC 0x3, W, ACCESS
+413A  6EEA     MOVWF FSR0H, ACCESS
+413C  0E02     MOVLW 0x2
+413E  6EEF     MOVWF INDF0, ACCESS
+1171:                          //printf("$%i %Lu %i;", pList[pPila[0]].id, pList[pPila[0]].da, pList[pPila[0]].estado);
+1172:          
+1173:                          activar_timer();
+4140  ECB1     CALL 0x962, 0
+1174:                          goto_address(pList[pPila[0]].di);
+4144  516F     MOVF pPila, W, BANKED
+4146  0D0B     MULLW 0xB
+4148  50F3     MOVF PRODL, W, ACCESS
+414A  6BA2     CLRF i, BANKED
+414C  6FA1     MOVWF pID, BANKED
+414E  0E17     MOVLW 0x17
+4150  25A1     ADDWF pID, W, BANKED
+4152  6EE9     MOVWF FSR0L, ACCESS
+4154  0E00     MOVLW 0x0
+4156  21A2     ADDWFC i, W, BANKED
+4158  6EEA     MOVWF FSR0H, ACCESS
+415A  CFEC     MOVFF PREINC0, 0xA4
+415E  52ED     MOVF POSTDEC0, F, ACCESS
+4160  CFEF     MOVFF INDF0, i
+4164  C0A4     MOVFF 0xA4, PCLATH
+4168  C0A3     MOVFF i, WREG
+416C  6EF9     MOVWF PCL, ACCESS
+1175:          
+1176:                      }
+416E  D07D     BRA 0x426A
+1177:                      else if (pList[pPila[0]].estado == 2)
+4170  516F     MOVF pPila, W, BANKED
+4172  0D0B     MULLW 0xB
+4174  50F3     MOVF PRODL, W, ACCESS
+4176  6BA2     CLRF i, BANKED
+4178  6FA1     MOVWF pID, BANKED
+417A  0E06     MOVLW 0x6
+417C  25A1     ADDWF pID, W, BANKED
+417E  6E01     MOVWF 0x1, ACCESS
+4180  0E00     MOVLW 0x0
+4182  21A2     ADDWFC i, W, BANKED
+4184  6E03     MOVWF 0x3, ACCESS
+4186  5001     MOVF 0x1, W, ACCESS
+4188  0F17     ADDLW 0x17
+418A  6EE9     MOVWF FSR0L, ACCESS
+418C  0E00     MOVLW 0x0
+418E  2003     ADDWFC 0x3, W, ACCESS
+4190  6EEA     MOVWF FSR0H, ACCESS
+4192  50EF     MOVF INDF0, W, ACCESS
+4194  0802     SUBLW 0x2
+4196  E169     BNZ 0x426A
+1178:                      {
+1179:                          //printf("$%i %Lu %i;", pList[pPila[0]].id, pList[pPila[0]].da, pList[pPila[0]].estado);
+1180:          
+1181:                          status = pList[pPila[0]].status;
+4198  516F     MOVF pPila, W, BANKED
+419A  0D0B     MULLW 0xB
+419C  50F3     MOVF PRODL, W, ACCESS
+419E  6BA2     CLRF i, BANKED
+41A0  6FA1     MOVWF pID, BANKED
+41A2  0E08     MOVLW 0x8
+41A4  25A1     ADDWF pID, W, BANKED
+41A6  6E01     MOVWF 0x1, ACCESS
+41A8  0E00     MOVLW 0x0
+41AA  21A2     ADDWFC i, W, BANKED
+41AC  6E03     MOVWF 0x3, ACCESS
+41AE  5001     MOVF 0x1, W, ACCESS
+41B0  0F17     ADDLW 0x17
+41B2  6EE9     MOVWF FSR0L, ACCESS
+41B4  0E00     MOVLW 0x0
+41B6  2003     ADDWFC 0x3, W, ACCESS
+41B8  6EEA     MOVWF FSR0H, ACCESS
+41BA  CFEF     MOVFF INDF0, STATUS
+1182:                          wreg = pList[pPila[0]].w_reg;
+41BE  516F     MOVF pPila, W, BANKED
+41C0  0D0B     MULLW 0xB
+41C2  50F3     MOVF PRODL, W, ACCESS
+41C4  6BA2     CLRF i, BANKED
+41C6  6FA1     MOVWF pID, BANKED
+41C8  0E07     MOVLW 0x7
+41CA  25A1     ADDWF pID, W, BANKED
+41CC  6E01     MOVWF 0x1, ACCESS
+41CE  0E00     MOVLW 0x0
+41D0  21A2     ADDWFC i, W, BANKED
+41D2  6E03     MOVWF 0x3, ACCESS
+41D4  5001     MOVF 0x1, W, ACCESS
+41D6  0F17     ADDLW 0x17
+41D8  6EE9     MOVWF FSR0L, ACCESS
+41DA  0E00     MOVLW 0x0
+41DC  2003     ADDWFC 0x3, W, ACCESS
+41DE  6EEA     MOVWF FSR0H, ACCESS
+41E0  CFEF     MOVFF INDF0, WREG
+1183:                          bsr = pList[pPila[0]].bsr;
+41E4  516F     MOVF pPila, W, BANKED
+41E6  0D0B     MULLW 0xB
+41E8  50F3     MOVF PRODL, W, ACCESS
+41EA  6BA2     CLRF i, BANKED
+41EC  6FA1     MOVWF pID, BANKED
+41EE  0E09     MOVLW 0x9
+41F0  25A1     ADDWF pID, W, BANKED
+41F2  6E01     MOVWF 0x1, ACCESS
+41F4  0E00     MOVLW 0x0
+41F6  21A2     ADDWFC i, W, BANKED
+41F8  6E03     MOVWF 0x3, ACCESS
+41FA  5001     MOVF 0x1, W, ACCESS
+41FC  0F17     ADDLW 0x17
+41FE  6EE9     MOVWF FSR0L, ACCESS
+4200  0E00     MOVLW 0x0
+4202  2003     ADDWFC 0x3, W, ACCESS
+4204  6EEA     MOVWF FSR0H, ACCESS
+4206  CFEF     MOVFF INDF0, BSR
+1184:                          wreg = pList[pPila[0]].w_reg;
+420A  516F     MOVF pPila, W, BANKED
+420C  0D0B     MULLW 0xB
+420E  50F3     MOVF PRODL, W, ACCESS
+4210  6BA2     CLRF i, BANKED
+4212  6FA1     MOVWF pID, BANKED
+4214  0E07     MOVLW 0x7
+4216  25A1     ADDWF pID, W, BANKED
+4218  6E01     MOVWF 0x1, ACCESS
+421A  0E00     MOVLW 0x0
+421C  21A2     ADDWFC i, W, BANKED
+421E  6E03     MOVWF 0x3, ACCESS
+4220  5001     MOVF 0x1, W, ACCESS
+4222  0F17     ADDLW 0x17
+4224  6EE9     MOVWF FSR0L, ACCESS
+4226  0E00     MOVLW 0x0
+4228  2003     ADDWFC 0x3, W, ACCESS
+422A  6EEA     MOVWF FSR0H, ACCESS
+422C  CFEF     MOVFF INDF0, WREG
+1185:                          //num = pList[pPila[0]].da;
+1186:                          //printf("-g;");
+1187:                          activar_timer();
+4230  ECB1     CALL 0x962, 0
+1188:          
+1189:                          //enable_interrupts(INT_TIMER1);
+1190:          
+1191:                          goto_address(pList[pPila[0]].da);
+4234  516F     MOVF pPila, W, BANKED
+4236  0D0B     MULLW 0xB
+4238  50F3     MOVF PRODL, W, ACCESS
+423A  6BA2     CLRF i, BANKED
+423C  6FA1     MOVWF pID, BANKED
+423E  0E04     MOVLW 0x4
+4240  25A1     ADDWF pID, W, BANKED
+4242  6E01     MOVWF 0x1, ACCESS
+4244  0E00     MOVLW 0x0
+4246  21A2     ADDWFC i, W, BANKED
+4248  6E03     MOVWF 0x3, ACCESS
+424A  5001     MOVF 0x1, W, ACCESS
+424C  0F17     ADDLW 0x17
+424E  6EE9     MOVWF FSR0L, ACCESS
+4250  0E00     MOVLW 0x0
+4252  2003     ADDWFC 0x3, W, ACCESS
+4254  6EEA     MOVWF FSR0H, ACCESS
+4256  CFEC     MOVFF PREINC0, i
+425A  52ED     MOVF POSTDEC0, F, ACCESS
+425C  CFEF     MOVFF INDF0, pID
+4260  C0A2     MOVFF i, PCLATH
+4264  C0A1     MOVFF pID, WREG
+4268  6EF9     MOVWF PCL, ACCESS
+1192:                      }
+1193:          
+1194:          
+1195:          
+1196:          
+1197:                  }
+426A  D6CA     BRA Inicio_SO
+1198:              }
+426C  0012     RETURN 0
+1199:          }
+1200:          
+1201:          
+1202:          
+---  C:/Program Files (x86)/PICC/devices/18F4550.h  -----------------------------------------------------
+1:             //////// Standard Header file for the PIC18F4550 device ////////////////
+2:             #device PIC18F4550
+00AE  51AF     MOVF _invar2, W, BANKED
+00B0  6A01     CLRF 0x1, ACCESS
+00B2  5DAE     SUBWF _invar1, W, BANKED
+00B4  E203     BC 0xBC
+00B6  C0AE     MOVFF _invar1, 0x0
+00BA  D00C     BRA 0xD4
+00BC  6A00     CLRF 0x0, ACCESS
+00BE  0E08     MOVLW 0x8
+00C0  6FB0     MOVWF 0xB0, BANKED
+00C2  37AE     RLCF _invar1, F, BANKED
+00C4  3600     RLCF 0x0, F, ACCESS
+00C6  51AF     MOVF _invar2, W, BANKED
+00C8  5C00     SUBWF 0x0, W, ACCESS
+00CA  B0D8     BTFSC STATUS, 0, ACCESS
+00CC  6E00     MOVWF 0x0, ACCESS
+00CE  3601     RLCF 0x1, F, ACCESS
+00D0  2FB0     DECFSZ 0xB0, F, BANKED
+00D2  D7F7     BRA 0xC2
+00D4  0012     RETURN 0
+00D6  0E20     MOVLW 0x20
+00D8  A9A9     BTFSS _invar4, 4, BANKED
+00DA  0E30     MOVLW 0x30
+00DC  6FAA     MOVWF 0xAA, BANKED
+00DE  C0A8     MOVFF _invar3, 0x0
+00E2  AFA8     BTFSS _invar3, 7, BANKED
+00E4  D008     BRA 0xF6
+00E6  1E00     COMF 0x0, F, ACCESS
+00E8  2A00     INCF 0x0, F, ACCESS
+00EA  C000     MOVFF 0x0, _invar3
+00EE  0E2D     MOVLW 0x2D
+00F0  6FAA     MOVWF 0xAA, BANKED
+00F2  8FA9     BSF _invar4, 7, BANKED
+00F4  81A9     BSF _invar4, 0, BANKED
+00F6  5001     MOVF 0x1, W, ACCESS
+00F8  C0A8     MOVFF _invar3, _invar1
+00FC  0E64     MOVLW 0x64
+00FE  6FAF     MOVWF _invar2, BANKED
+0100  DFD6     RCALL DIV88
+0102  C000     MOVFF 0x0, _invar3
+0106  0E30     MOVLW 0x30
+0108  2401     ADDWF 0x1, W, ACCESS
+010A  6FAB     MOVWF 0xAB, BANKED
+010C  C0A8     MOVFF _invar3, _invar1
+0110  0E0A     MOVLW 0xA
+0112  6FAF     MOVWF _invar2, BANKED
+0114  DFCC     RCALL DIV88
+0116  0E30     MOVLW 0x30
+0118  2400     ADDWF 0x0, W, ACCESS
+011A  6FAD     MOVWF 0xAD, BANKED
+011C  0E30     MOVLW 0x30
+011E  2401     ADDWF 0x1, W, ACCESS
+0120  6FAC     MOVWF 0xAC, BANKED
+0122  C0AA     MOVFF 0xAA, 0x0
+0126  0E30     MOVLW 0x30
+0128  5DAB     SUBWF 0xAB, W, BANKED
+012A  E004     BZ 0x134
+012C  83A9     BSF _invar4, 1, BANKED
+012E  BFA9     BTFSC _invar4, 7, BANKED
+0130  85A9     BSF _invar4, 2, BANKED
+0132  D012     BRA 0x158
+0134  C0AA     MOVFF 0xAA, 0xAB
+0138  0E20     MOVLW 0x20
+013A  6FAA     MOVWF 0xAA, BANKED
+013C  0E30     MOVLW 0x30
+013E  5DAC     SUBWF 0xAC, W, BANKED
+0140  E004     BZ 0x14A
+0142  81A9     BSF _invar4, 0, BANKED
+0144  BFA9     BTFSC _invar4, 7, BANKED
+0146  83A9     BSF _invar4, 1, BANKED
+0148  D007     BRA 0x158
+014A  A4D8     BTFSS STATUS, 2, ACCESS
+014C  81A9     BSF _invar4, 0, BANKED
+014E  E104     BNZ 0x158
+0150  C0AB     MOVFF 0xAB, 0xAC
+0154  0E20     MOVLW 0x20
+0156  6FAB     MOVWF 0xAB, BANKED
+0158  B5A9     BTFSC _invar4, 2, BANKED
+015A  D005     BRA 0x166
+015C  B3A9     BTFSC _invar4, 1, BANKED
+015E  D007     BRA 0x16E
+0160  B1A9     BTFSC _invar4, 0, BANKED
+0162  D009     BRA 0x176
+0164  D00C     BRA 0x17E
+0166  51AA     MOVF 0xAA, W, BANKED
+0168  A89E     BTFSS PIR1, 4, ACCESS
+016A  D7FE     BRA 0x168
+016C  6EAD     MOVWF TXREG, ACCESS
+016E  51AB     MOVF 0xAB, W, BANKED
+0170  A89E     BTFSS PIR1, 4, ACCESS
+0172  D7FE     BRA 0x170
+0174  6EAD     MOVWF TXREG, ACCESS
+0176  51AC     MOVF 0xAC, W, BANKED
+0178  A89E     BTFSS PIR1, 4, ACCESS
+017A  D7FE     BRA 0x178
+017C  6EAD     MOVWF TXREG, ACCESS
+017E  51AD     MOVF 0xAD, W, BANKED
+0180  A89E     BTFSS PIR1, 4, ACCESS
+0182  D7FE     BRA 0x180
+0184  6EAD     MOVWF TXREG, ACCESS
+0186  0012     RETURN 0
+0188  CFEA     MOVFF FSR0H, 0xB0
+018C  CFE9     MOVFF FSR0L, _invar2
+0190  39A9     SWAPF _invar4, W, BANKED
+0192  09F0     IORLW 0xF0
+0194  6FAB     MOVWF 0xAB, BANKED
+0196  27AB     ADDWF 0xAB, F, BANKED
+0198  0FE2     ADDLW 0xE2
+019A  6FAC     MOVWF 0xAC, BANKED
+019C  0F32     ADDLW 0x32
+019E  6FAE     MOVWF _invar1, BANKED
+01A0  51A9     MOVF _invar4, W, BANKED
+01A2  0B0F     ANDLW 0xF
+01A4  27AC     ADDWF 0xAC, F, BANKED
+01A6  27AC     ADDWF 0xAC, F, BANKED
+01A8  27AE     ADDWF _invar1, F, BANKED
+01AA  0FE9     ADDLW 0xE9
+01AC  6FAD     MOVWF 0xAD, BANKED
+01AE  27AD     ADDWF 0xAD, F, BANKED
+01B0  27AD     ADDWF 0xAD, F, BANKED
+01B2  39A8     SWAPF _invar3, W, BANKED
+01B4  0B0F     ANDLW 0xF
+01B6  27AD     ADDWF 0xAD, F, BANKED
+01B8  27AE     ADDWF _invar1, F, BANKED
+01BA  37AD     RLCF 0xAD, F, BANKED
+01BC  37AE     RLCF _invar1, F, BANKED
+01BE  1FAE     COMF _invar1, F, BANKED
+01C0  37AE     RLCF _invar1, F, BANKED
+01C2  51A8     MOVF _invar3, W, BANKED
+01C4  0B0F     ANDLW 0xF
+01C6  27AE     ADDWF _invar1, F, BANKED
+01C8  37AB     RLCF 0xAB, F, BANKED
+01CA  0E07     MOVLW 0x7
+01CC  6FAA     MOVWF 0xAA, BANKED
+01CE  0E0A     MOVLW 0xA
+01D0  07AD     DECF 0xAD, F, BANKED
+01D2  27AE     ADDWF _invar1, F, BANKED
+01D4  E3FD     BNC 0x1D0
+01D6  07AC     DECF 0xAC, F, BANKED
+01D8  27AD     ADDWF 0xAD, F, BANKED
+01DA  E3FD     BNC 0x1D6
+01DC  07AB     DECF 0xAB, F, BANKED
+01DE  27AC     ADDWF 0xAC, F, BANKED
+01E0  E3FD     BNC 0x1DC
+01E2  07AA     DECF 0xAA, F, BANKED
+01E4  27AB     ADDWF 0xAB, F, BANKED
+01E6  E3FD     BNC 0x1E2
+01E8  6AEA     CLRF FSR0H, ACCESS
+01EA  0EAA     MOVLW 0xAA
+01EC  6EE9     MOVWF FSR0L, ACCESS
+01EE  0E07     MOVLW 0x7
+01F0  15AF     ANDWF _invar2, W, BANKED
+01F2  9DAF     BCF _invar2, 6, BANKED
+01F4  26E9     ADDWF FSR0L, F, ACCESS
+01F6  0EAE     MOVLW 0xAE
+01F8  5CE9     SUBWF FSR0L, W, ACCESS
+01FA  B4D8     BTFSC STATUS, 2, ACCESS
+01FC  8DAF     BSF _invar2, 6, BANKED
+01FE  50EF     MOVF INDF0, W, ACCESS
+0200  6E00     MOVWF 0x0, ACCESS
+0202  E108     BNZ 0x214
+0204  BDAF     BTFSC _invar2, 6, BANKED
+0206  D006     BRA 0x214
+0208  B9AF     BTFSC _invar2, 4, BANKED
+020A  D00C     BRA 0x224
+020C  B7AF     BTFSC _invar2, 3, BANKED
+020E  D002     BRA 0x214
+0210  0E20     MOVLW 0x20
+0212  D003     BRA 0x21A
+0214  87AF     BSF _invar2, 3, BANKED
+0216  99AF     BCF _invar2, 4, BANKED
+0218  0E30     MOVLW 0x30
+021A  2600     ADDWF 0x0, F, ACCESS
+021C  5000     MOVF 0x0, W, ACCESS
+021E  A89E     BTFSS PIR1, 4, ACCESS
+0220  D7FE     BRA 0x21E
+0222  6EAD     MOVWF TXREG, ACCESS
+0224  50EE     MOVF POSTINC0, W, ACCESS
+0226  ADAF     BTFSS _invar2, 6, BANKED
+0228  D7E6     BRA 0x1F6
+022A  0012     RETURN 0
+0346  518A     MOVF _invar6, W, BANKED
+0348  038C     MULWF _invar7, BANKED
+034A  CFF3     MOVFF PRODL, 0x1
+034E  CFF4     MOVFF PRODH, 0x0
+0352  038D     MULWF 0x8D, BANKED
+0354  50F3     MOVF PRODL, W, ACCESS
+0356  2600     ADDWF 0x0, F, ACCESS
+0358  518B     MOVF 0x8B, W, BANKED
+035A  038C     MULWF _invar7, BANKED
+035C  50F3     MOVF PRODL, W, ACCESS
+035E  2000     ADDWFC 0x0, W, ACCESS
+0360  6E02     MOVWF 0x2, ACCESS
+0362  EF45     GOTO 0x48A
+0366  6B96     CLRF TRISE, BANKED
+0368  6B97     CLRF 0x97, BANKED
+036A  0E01     MOVLW 0x1
+036C  6F98     MOVWF 0x98, BANKED
+036E  6ADA     CLRF FSR2H, ACCESS
+0370  6AD9     CLRF FSR2L, ACCESS
+0372  6B9B     CLRF 0x9B, BANKED
+0374  0E8E     MOVLW 0x8E
+0376  6F9A     MOVWF 0x9A, BANKED
+0378  6AEA     CLRF FSR0H, ACCESS
+037A  0E92     MOVLW 0x92
+037C  6EE9     MOVWF FSR0L, ACCESS
+037E  C09B     MOVFF 0x9B, FSR1H
+0382  C09A     MOVFF 0x9A, FSR1L
+0386  C098     MOVFF 0x98, 0x99
+038A  90D8     BCF STATUS, 0, ACCESS
+038C  50E5     MOVF POSTDEC1, W, ACCESS
+038E  02EE     MULWF POSTINC0, ACCESS
+0390  50F3     MOVF PRODL, W, ACCESS
+0392  2396     ADDWFC TRISE, F, BANKED
+0394  50F4     MOVF PRODH, W, ACCESS
+0396  2397     ADDWFC 0x97, F, BANKED
+0398  2F99     DECFSZ 0x99, F, BANKED
+039A  D7F7     BRA 0x38A
+039C  C096     MOVFF TRISE, POSTINC2
+03A0  C097     MOVFF 0x97, TRISE
+03A4  6B97     CLRF 0x97, BANKED
+03A6  B0D8     BTFSC STATUS, 0, ACCESS
+03A8  2B97     INCF 0x97, F, BANKED
+03AA  2B9A     INCF 0x9A, F, BANKED
+03AC  B4D8     BTFSC STATUS, 2, ACCESS
+03AE  2B9B     INCF 0x9B, F, BANKED
+03B0  2B98     INCF 0x98, F, BANKED
+03B2  5198     MOVF 0x98, W, BANKED
+03B4  0805     SUBLW 0x5
+03B6  E1E0     BNZ 0x378
+03B8  EF5C     GOTO 0x4B8
+057A  0009     TBLRD*+
+057C  52F5     MOVF TABLAT, F, ACCESS
+057E  E00D     BZ 0x59A
+0580  CFF6     MOVFF TBLPTRL, i
+0584  CFF7     MOVFF TBLPTRH, i
+0588  50F5     MOVF TABLAT, W, ACCESS
+058A  A89E     BTFSS PIR1, 4, ACCESS
+058C  D7FE     BRA 0x58A
+058E  6EAD     MOVWF TXREG, ACCESS
+0590  C0A2     MOVFF i, TBLPTRL
+0594  C0A3     MOVFF i, TBLPTRH
+0598  D7F0     BRA PSTRINGC_9600_31766_31767
+059A  0012     RETURN 0
+059C  322D     RRCF 0x2D, F, ACCESS
+059E  203A     ADDWFC 0x3A, W, ACCESS
+05A0  3B39     SWAPF 0x39, F, BANKED
+05A2  0000     NOP
+05A4  322D     RRCF 0x2D, F, ACCESS
+05A6  203A     ADDWFC 0x3A, W, ACCESS
+05A8  3B38     SWAPF 0x38, F, BANKED
+05AA  0000     NOP
+05AC  322D     RRCF 0x2D, F, ACCESS
+05AE  203A     ADDWFC 0x3A, W, ACCESS
+05B0  3B37     SWAPF 0x37, F, BANKED
+05B2  0000     NOP
+05B4  322D     RRCF 0x2D, F, ACCESS
+05B6  203A     ADDWFC 0x3A, W, ACCESS
+05B8  3B36     SWAPF 0x36, F, BANKED
+05BA  0000     NOP
+05BC  322D     RRCF 0x2D, F, ACCESS
+05BE  203A     ADDWFC 0x3A, W, ACCESS
+05C0  3B35     SWAPF 0x35, F, BANKED
+05C2  0000     NOP
+05C4  322D     RRCF 0x2D, F, ACCESS
+05C6  203A     ADDWFC 0x3A, W, ACCESS
+05C8  3B34     SWAPF 0x34, F, BANKED
+05CA  0000     NOP
+05CC  322D     RRCF 0x2D, F, ACCESS
+05CE  203A     ADDWFC 0x3A, W, ACCESS
+05D0  3B33     SWAPF 0x33, F, BANKED
+05D2  0000     NOP
+05D4  322D     RRCF 0x2D, F, ACCESS
+05D6  203A     ADDWFC 0x3A, W, ACCESS
+05D8  3B32     SWAPF 0x32, F, BANKED
+05DA  0000     NOP
+05DC  322D     RRCF 0x2D, F, ACCESS
+05DE  203A     ADDWFC 0x3A, W, ACCESS
+05E0  3B31     SWAPF 0x31, F, BANKED
+05E2  0000     NOP
+05E4  322D     RRCF 0x2D, F, ACCESS
+05E6  203A     ADDWFC 0x3A, W, ACCESS
+05E8  3B30     SWAPF 0x30, F, BANKED
+05EA  0000     NOP
+0932  CFF2     MOVFF INTCON, 0xD
+0936  9EF2     BCF INTCON, 7, ACCESS
+0938  24E8     ADDWF WREG, W, ACCESS
+093A  6AF7     CLRF TBLPTRH, ACCESS
+093C  36F7     RLCF TBLPTRH, F, ACCESS
+093E  0F57     ADDLW 0x57
+0940  6EF6     MOVWF TBLPTRL, ACCESS
+0942  0E09     MOVLW 0x9
+0944  22F7     ADDWFC TBLPTRH, F, ACCESS
+0946  000A     TBLRD*-
+0948  50F5     MOVF TABLAT, W, ACCESS
+094A  6EFA     MOVWF PCLATH, ACCESS
+094C  0008     TBLRD*
+094E  50F5     MOVF TABLAT, W, ACCESS
+0950  BE0D     BTFSC 0xD, 7, ACCESS
+0952  8EF2     BSF INTCON, 7, ACCESS
+0954  6EF9     MOVWF PCL, ACCESS
+0956  07FA     DECF 0xFA, F, BANKED
+0958  07FC     DECF 0xFC, F, BANKED
+095A  0810     SUBLW 0x10
+095C  0818     SUBLW 0x18
+095E  0822     SUBLW 0x22
+0960  083E     SUBLW 0x3E
+096A  CFF2     MOVFF INTCON, 0xD
+096E  9EF2     BCF INTCON, 7, ACCESS
+0970  24E8     ADDWF WREG, W, ACCESS
+0972  6AF7     CLRF TBLPTRH, ACCESS
+0974  36F7     RLCF TBLPTRH, F, ACCESS
+0976  0F8F     ADDLW 0x8F
+0978  6EF6     MOVWF TBLPTRL, ACCESS
+097A  0E09     MOVLW 0x9
+097C  22F7     ADDWFC TBLPTRH, F, ACCESS
+097E  000A     TBLRD*-
+0980  50F5     MOVF TABLAT, W, ACCESS
+0982  6EFA     MOVWF PCLATH, ACCESS
+0984  0008     TBLRD*
+0986  50F5     MOVF TABLAT, W, ACCESS
+0988  BE0D     BTFSC 0xD, 7, ACCESS
+098A  8EF2     BSF INTCON, 7, ACCESS
+098C  6EF9     MOVWF PCL, ACCESS
+098E  401A     RRNCF 0x1A, W, ACCESS
+0990  4024     RRNCF 0x24, W, ACCESS
+0992  4030     RRNCF 0x30, W, ACCESS
+0994  403C     RRNCF 0x3C, W, ACCESS
+0996  4048     RRNCF 0x48, W, ACCESS
+0998  4096     RRNCF TRISE, W, ACCESS
+099A  4096     RRNCF TRISE, W, ACCESS
+099C  4096     RRNCF TRISE, W, ACCESS
+099E  4096     RRNCF TRISE, W, ACCESS
+09A0  4096     RRNCF TRISE, W, ACCESS
+09A2  4096     RRNCF TRISE, W, ACCESS
+09A4  4096     RRNCF TRISE, W, ACCESS
+09A6  4096     RRNCF TRISE, W, ACCESS
+09A8  4096     RRNCF TRISE, W, ACCESS
+09AA  4096     RRNCF TRISE, W, ACCESS
+09AC  4096     RRNCF TRISE, W, ACCESS
+09AE  4054     RRNCF 0x54, W, ACCESS
+09B0  4062     RRNCF SPPDATA, W, ACCESS
+09B2  406E     RRNCF UADDR, W, ACCESS
+09B4  407C     RRNCF UEP12, W, ACCESS
+09B6  408A     RRNCF LATB, W, ACCESS
+09B8  CFF2     MOVFF INTCON, 0xD
+09BC  9EF2     BCF INTCON, 7, ACCESS
+09BE  24E8     ADDWF WREG, W, ACCESS
+09C0  6AF7     CLRF TBLPTRH, ACCESS
+09C2  36F7     RLCF TBLPTRH, F, ACCESS
+09C4  0FDD     ADDLW 0xDD
+09C6  6EF6     MOVWF TBLPTRL, ACCESS
+09C8  0E09     MOVLW 0x9
+09CA  22F7     ADDWFC TBLPTRH, F, ACCESS
+09CC  000A     TBLRD*-
+09CE  50F5     MOVF TABLAT, W, ACCESS
+09D0  6EFA     MOVWF PCLATH, ACCESS
+09D2  0008     TBLRD*
+09D4  50F5     MOVF TABLAT, W, ACCESS
+09D6  BE0D     BTFSC 0xD, 7, ACCESS
+09D8  8EF2     BSF INTCON, 7, ACCESS
+09DA  6EF9     MOVWF PCL, ACCESS
+09DC  40A6     RRNCF EECON1, W, ACCESS
+09DE  40AA     RRNCF 0xFAA, W, ACCESS
+09E0  40C4     RRNCF ADRESH, W, ACCESS
+09E2  40E6     RRNCF POSTINC1, W, ACCESS
+3:             
+4:             #nolist
+5:             //////// Program memory: 16384x16  Data RAM: 2048  Stack: 31
+6:             //////// I/O: 35   Analog Pins: 13
+7:             //////// Data EEPROM: 256
+8:             //////// C Scratch area: 00   ID Location: 200000
+9:             //////// Fuses: PLL1,PLL2,PLL3,PLL4,PLL5,PLL6,PLL10,PLL12,CPUDIV1,CPUDIV2
+10:            //////// Fuses: CPUDIV3,CPUDIV4,NOUSBDIV,USBDIV,XT,XTPLL,EC_IO,EC,ECPLL_IO
+11:            //////// Fuses: ECPLL,INTRC_IO,INTRC,INTXT,INTHS,HS,HSPLL,NOFCMEN,FCMEN
+12:            //////// Fuses: NOIESO,IESO,PUT,NOPUT,NOBROWNOUT,BROWNOUT_SW,BROWNOUT_NOSL
+13:            //////// Fuses: BROWNOUT,BORV45,BORV43,BORV27,BORV21,NOVREGEN,VREGEN,NOWDT
+14:            //////// Fuses: WDT,WDT1,WDT2,WDT4,WDT8,WDT16,WDT32,WDT64,WDT128,WDT256
+15:            //////// Fuses: WDT512,WDT1024,WDT2048,WDT4096,WDT8192,WDT16384,WDT32768
+16:            //////// Fuses: CCP2B3,CCP2C1,NOPBADEN,PBADEN,NOLPT1OSC,LPT1OSC,NOMCLR,MCLR
+17:            //////// Fuses: NOSTVREN,STVREN,NOLVP,LVP,ICSP1,ICSP2,NOXINST,XINST,DEBUG
+18:            //////// Fuses: NODEBUG,PROTECT,NOPROTECT,CPB,NOCPB,CPD,NOCPD,WRT,NOWRT,WRTC
+19:            //////// Fuses: NOWRTC,WRTB,NOWRTB,WRTD,NOWRTD,EBTR,NOEBTR,EBTRB,NOEBTRB
+20:            //////// 
+21:            #if !defined(__PCH__)
+22:            #define _bif
+23:            #define int8 char
+24:            #define int16 long
+25:            #define int32 long long
+26:            #define float32 float
+27:            #define int1 char
+28:            
+29:            #endif
+30:            ////////////////////////////////////////////////////////////////// I/O
+31:            // Discrete I/O Functions: SET_TRIS_x(), OUTPUT_x(), INPUT_x(),
+32:            //                         PORT_x_PULLUPS(), INPUT(),
+33:            //                         OUTPUT_LOW(), OUTPUT_HIGH(),
+34:            //                         OUTPUT_FLOAT(), OUTPUT_BIT()
+35:            // Discrete I/O Prototypes:
+36:            _bif void set_tris_a(int8 value);  
+37:            _bif void set_tris_b(int8 value);  
+38:            _bif void set_tris_c(int8 value);  
+39:            _bif void set_tris_d(int8 value);  
+40:            _bif void set_tris_e(int8 value);  
+41:            _bif int8 get_tris_a(void);  
+42:            _bif int8 get_tris_b(void);  
+43:            _bif int8 get_tris_c(void);  
+44:            _bif int8 get_tris_d(void);  
+45:            _bif int8 get_tris_e(void);  
+46:            _bif void output_a(int8 value);  
+47:            _bif void output_b(int8 value);  
+48:            _bif void output_c(int8 value);  
+49:            _bif void output_d(int8 value);  
+50:            _bif void output_e(int8 value);  
+51:            _bif int8 input_a(void);  
+52:            _bif int8 input_b(void);  
+53:            _bif int8 input_c(void);  
+54:            _bif int8 input_d(void);  
+55:            _bif int8 input_e(void);  
+56:            _bif int1 input_change_a(void);  
+57:            _bif int1 input_change_b(void);  
+58:            _bif int1 input_change_c(void);  
+59:            _bif int1 input_change_d(void);  
+60:            _bif int1 input_change_e(void);  
+61:            _bif int1 input(int16 pin);
+62:            _bif int1 input_state(int16 pin);
+63:            _bif void output_low(int16 pin);
+64:            _bif void output_high(int16 pin);
+65:            _bif void output_toggle(int16 pin);
+66:            _bif void output_bit(int16 pin, int1 level);
+67:            _bif void output_float(int16 pin);
+68:            _bif void output_drive(int16 pin);
+69:            
+70:            // Constants used to identify pins in the above are:
+71:            
+72:            #define PIN_A0  31744
+73:            #define PIN_A1  31745
+74:            #define PIN_A2  31746
+75:            #define PIN_A3  31747
+76:            #define PIN_A4  31748
+77:            #define PIN_A5  31749
+78:            #define PIN_A6  31750
+79:            
+80:            #define PIN_B0  31752
+81:            #define PIN_B1  31753
+82:            #define PIN_B2  31754
+83:            #define PIN_B3  31755
+84:            #define PIN_B4  31756
+85:            #define PIN_B5  31757
+86:            #define PIN_B6  31758
+87:            #define PIN_B7  31759
+88:            
+89:            #define PIN_C0  31760
+90:            #define PIN_C1  31761
+91:            #define PIN_C2  31762
+92:            #define PIN_C4  31764
+93:            #define PIN_C5  31765
+94:            #define PIN_C6  31766
+95:            #define PIN_C7  31767
+96:            
+97:            #define PIN_D0  31768
+98:            #define PIN_D1  31769
+99:            #define PIN_D2  31770
+100:           #define PIN_D3  31771
+101:           #define PIN_D4  31772
+102:           #define PIN_D5  31773
+103:           #define PIN_D6  31774
+104:           #define PIN_D7  31775
+105:           
+106:           #define PIN_E0  31776
+107:           #define PIN_E1  31777
+108:           #define PIN_E2  31778
+109:           #define PIN_E3  31779
+110:           #define PIN_E7  31783
+111:           
+112:           ////////////////////////////////////////////////////////////////// Useful defines
+113:           #define FALSE 0
+114:           #define TRUE 1
+115:           
+116:           #define BYTE int8
+117:           #define BOOLEAN int1
+118:           
+119:           #define getc getch
+120:           #define fgetc getch
+121:           #define getchar getch
+122:           #define putc putchar
+123:           #define fputc putchar
+124:           #define fgets gets
+125:           #define fputs puts
+126:           
+127:           ////////////////////////////////////////////////////////////////// Control
+128:           // Control Functions:  RESET_CPU(), SLEEP(), RESTART_CAUSE()
+129:           // Prototypes:
+130:           _bif int8 restart_cause(void);
+131:           _bif void reset_cpu(void);
+132:           _bif void sleep(void);
+133:           // Constants returned from RESTART_CAUSE() are:
+134:           #define WDT_TIMEOUT       7    
+135:           #define MCLR_FROM_SLEEP  11    
+136:           #define MCLR_FROM_RUN    15    
+137:           #define NORMAL_POWER_UP  12    
+138:           #define BROWNOUT_RESTART 14    
+139:           #define WDT_FROM_SLEEP    3    
+140:           #define RESET_INSTRUCTION 0    
+141:           
+142:           // Constants for calls to sleep() are:
+143:           #define SLEEP_FULL       0  // Default
+144:           #define SLEEP_IDLE       1  // Clock and peripherals don't stop
+145:           
+146:           ////////////////////////////////////////////////////////////////// Timer 0
+147:           // Timer 0 (AKA RTCC)Functions: SETUP_COUNTERS() or SETUP_TIMER_0(),
+148:           //                              SET_TIMER0() or SET_RTCC(),
+149:           //                              GET_TIMER0() or GET_RTCC()
+150:           // Timer 0 Prototypes:
+151:           _bif void setup_timer_0(int8 mode);
+152:           _bif void set_timer0(int16 value);     
+153:           _bif int16 get_timer0(void);           
+154:           _bif void setup_counters(int8 mode, int8 prescaler);
+155:           _bif void set_rtcc(int16 value);       
+156:           _bif int16 get_rtcc(void);             
+157:           // Constants used for SETUP_TIMER_0() are:
+158:           #define T0_INTERNAL   0   
+159:           #define T0_EXT_L_TO_H 32
+160:           #define T0_EXT_H_TO_L 48
+161:           
+162:           #define T0_DIV_1      8
+163:           #define T0_DIV_2      0
+164:           #define T0_DIV_4      1
+165:           #define T0_DIV_8      2
+166:           #define T0_DIV_16     3
+167:           #define T0_DIV_32     4
+168:           #define T0_DIV_64     5
+169:           #define T0_DIV_128    6
+170:           #define T0_DIV_256    7
+171:           
+172:           #define T0_OFF        0x80  
+173:           
+174:           #define T0_8_BIT      0x40  
+175:           
+176:           #define RTCC_INTERNAL   0      // The following are provided for compatibility
+177:           #define RTCC_EXT_L_TO_H 32     // with older compiler versions
+178:           #define RTCC_EXT_H_TO_L 48
+179:           #define RTCC_DIV_1      8
+180:           #define RTCC_DIV_2      0
+181:           #define RTCC_DIV_4      1
+182:           #define RTCC_DIV_8      2
+183:           #define RTCC_DIV_16     3
+184:           #define RTCC_DIV_32     4
+185:           #define RTCC_DIV_64     5
+186:           #define RTCC_DIV_128    6
+187:           #define RTCC_DIV_256    7
+188:           #define RTCC_OFF        0x80  
+189:           #define RTCC_8_BIT      0x40  
+190:           
+191:           // Constants used for SETUP_COUNTERS() are the above
+192:           // constants for the 1st param and the following for
+193:           // the 2nd param:
+194:           
+195:           ////////////////////////////////////////////////////////////////// WDT
+196:           // Watch Dog Timer Functions: SETUP_WDT() or SETUP_COUNTERS() (see above)
+197:           //                            RESTART_WDT()
+198:           // WDT base is 4ms
+199:           // WDT Prototypes:
+200:           _bif void setup_wdt(int16 mode);
+201:           _bif void restart_wdt(void);
+202:           // Constants used for SETUP_WDT() are:
+203:           #define WDT_ON        0x100
+204:           #define WDT_OFF       0
+205:           
+206:           #define WDT_4MS    0x300  
+207:           #define WDT_8MS    0x500  
+208:           #define WDT_16MS   0x700  
+209:           #define WDT_32MS   0x900  
+210:           #define WDT_64MS   0xB00  
+211:           #define WDT_128MS  0xD00  
+212:           #define WDT_256MS  0xF00  
+213:           #define WDT_512MS  0x1100  
+214:           #define WDT_1S     0x1300  
+215:           #define WDT_2S     0x1500  
+216:           #define WDT_4S     0x1700  
+217:           #define WDT_8S     0x1900  
+218:           #define WDT_16     0x1B00  
+219:           #define WDT_32S    0x1D00  
+220:           #define WDT_64S    0x1F00  
+221:           #define WDT_128S   0x2100  
+222:           
+223:           
+224:           ////////////////////////////////////////////////////////////////// Timer 1
+225:           // Timer 1 Functions: SETUP_TIMER_1, GET_TIMER1, SET_TIMER1
+226:           // Timer 1 Prototypes:
+227:           _bif void setup_timer_1(int16 mode);
+228:           _bif int16 get_timer1(void);
+229:           _bif void set_timer1(int16 value);
+230:           // Constants used for SETUP_TIMER_1() are:
+231:           //      (or (via |) together constants from each group)
+232:           #define T1_DISABLED         0
+233:           #define T1_INTERNAL         0x85
+234:           #define T1_EXTERNAL         0x87
+235:           #define T1_EXTERNAL_SYNC    0x83
+236:           
+237:           #define T1_CLK_OUT          8
+238:           
+239:           #define T1_DIV_BY_1         0
+240:           #define T1_DIV_BY_2         0x10
+241:           #define T1_DIV_BY_4         0x20
+242:           #define T1_DIV_BY_8         0x30
+243:           
+244:           ////////////////////////////////////////////////////////////////// Timer 2
+245:           // Timer 2 Functions: SETUP_TIMER_2, GET_TIMER2, SET_TIMER2
+246:           // Timer 2 Prototypes:
+247:           _bif void setup_timer_2(int8 mode, int8 period, int8 postscale); 
+248:           _bif int8 get_timer2(void);
+249:           _bif void set_timer2(int8 value);
+250:           // Constants used for SETUP_TIMER_2() are:
+251:           #define T2_DISABLED         0
+252:           #define T2_DIV_BY_1         4
+253:           #define T2_DIV_BY_4         5
+254:           #define T2_DIV_BY_16        6 
+255:           
+256:           ////////////////////////////////////////////////////////////////// Timer 3
+257:           // Timer 3 Functions: SETUP_TIMER_3, GET_TIMER3, SET_TIMER3
+258:           // Timer 3 Prototypes:
+259:           _bif void setup_timer_3(int16 mode);
+260:           _bif int16 get_timer3(void);
+261:           _bif void set_timer3(int16 value);
+262:           // Constants used for SETUP_TIMER_3() are:
+263:           //      (or (via |) together constants from each group)
+264:           #define T3_DISABLED         0
+265:           #define T3_INTERNAL         0x85
+266:           #define T3_EXTERNAL         0x87
+267:           #define T3_EXTERNAL_SYNC    0x83
+268:           
+269:           #define T3_DIV_BY_1         0
+270:           #define T3_DIV_BY_2         0x10
+271:           #define T3_DIV_BY_4         0x20
+272:           #define T3_DIV_BY_8         0x30
+273:           
+274:           ////////////////////////////////////////////////////////////////// CCP
+275:           // CCP Functions: SETUP_CCPx, SET_PWMx_DUTY
+276:           // CCP Variables: CCP_x, CCP_x_LOW, CCP_x_HIGH
+277:           // CCP1 Prototypes:
+278:           _bif void setup_ccp1(int32 mode);
+279:           _bif void setup_ccp1(int32 mode, int8 pwm);
+280:           _bif void set_pwm1_duty(int16 value);
+281:           // Constants used for SETUP_CCPx() are:
+282:           #define CCP_OFF                         0
+283:           #define CCP_CAPTURE_FE                  4
+284:           #define CCP_CAPTURE_RE                  5
+285:           #define CCP_CAPTURE_DIV_4               6
+286:           #define CCP_CAPTURE_DIV_16              7
+287:           #define CCP_COMPARE_SET_ON_MATCH        8
+288:           #define CCP_COMPARE_CLR_ON_MATCH        9
+289:           #define CCP_COMPARE_INT                 0xA
+290:           #define CCP_COMPARE_INT_AND_TOGGLE      0x2       
+291:           #define CCP_COMPARE_RESET_TIMER         0xB
+292:           #define CCP_PWM                         0xC
+293:           #define CCP_PWM_PLUS_1                  0x1c  
+294:           #define CCP_PWM_PLUS_2                  0x2c
+295:           #define CCP_PWM_PLUS_3                  0x3c
+296:           //#define CCP_USE_TIMER3                0x100  OBSOLETE, SEE TIMER-3     
+297:           #word   CCP_1       =                   getenv("SFR:CCPR1L")
+298:           #byte   CCP_1_LOW   =                   getenv("SFR:CCPR1L")
+299:           #byte   CCP_1_HIGH  =                   getenv("SFR:CCPR1H")
+300:           // OR in one of the following to use timer 3 with a CCP unit
+301:           #define  T3_CCP1_TO_2  0x48
+302:           #define  T3_CCP2       0x8
+303:           
+304:           // The following should be used with the ECCP unit only (or these in)
+305:           #define CCP_PWM_H_H                     0x0c
+306:           #define CCP_PWM_H_L                     0x0d
+307:           #define CCP_PWM_L_H                     0x0e
+308:           #define CCP_PWM_L_L                     0x0f
+309:           
+310:           #define CCP_PWM_FULL_BRIDGE             0x40
+311:           #define CCP_PWM_FULL_BRIDGE_REV         0xC0
+312:           #define CCP_PWM_HALF_BRIDGE             0x80
+313:           
+314:           #define CCP_SHUTDOWN_ON_COMP1           0x100000
+315:           #define CCP_SHUTDOWN_ON_COMP2           0x200000
+316:           #define CCP_SHUTDOWN_ON_COMP            0x300000
+317:           #define CCP_SHUTDOWN_ON_INT0            0x400000
+318:           #define CCP_SHUTDOWN_ON_COMP1_INT0      0x500000
+319:           #define CCP_SHUTDOWN_ON_COMP2_INT0      0x600000
+320:           #define CCP_SHUTDOWN_ON_COMP_INT0       0x700000
+321:           
+322:           #define CCP_SHUTDOWN_AC_L               0x000000
+323:           #define CCP_SHUTDOWN_AC_H               0x040000
+324:           #define CCP_SHUTDOWN_AC_F               0x080000
+325:           
+326:           #define CCP_SHUTDOWN_BD_L               0x000000
+327:           #define CCP_SHUTDOWN_BD_H               0x010000
+328:           #define CCP_SHUTDOWN_BD_F               0x020000
+329:           
+330:           #define CCP_SHUTDOWN_RESTART            0x80000000  
+331:           
+332:           
+333:           // CCP2 Prototypes:
+334:           _bif void setup_ccp2(int32 mode);
+335:           _bif void setup_ccp2(int32 mode, int8 pwm);
+336:           _bif void set_pwm2_duty(int16 value);
+337:           #word   CCP_2       =                   getenv("SFR:CCPR2L")
+338:           #byte   CCP_2_LOW   =                   getenv("SFR:CCPR2L")
+339:           #byte   CCP_2_HIGH  =                   getenv("SFR:CCPR2H")
+340:           ////////////////////////////////////////////////////////////////// PSP
+341:           // PSP Functions: SETUP_PSP, PSP_INPUT_FULL(), PSP_OUTPUT_FULL(),
+342:           //                PSP_OVERFLOW(), INPUT_D(), OUTPUT_D()
+343:           // PSP Variables: PSP_DATA
+344:           // PSP Prototypes:
+345:           _bif void setup_psp(int8 mode);
+346:           _bif int1 psp_output_full(void);
+347:           _bif int1 psp_input_full(void);
+348:           _bif int1 psp_overflow(void);
+349:           // Constants used in SETUP_PSP() are:
+350:           #define PSP_ENABLED    0x10
+351:           #define PSP_DISABLED   0
+352:           
+353:           #byte  PSP_DATA = 0xF83 
+354:           
+355:           ////////////////////////////////////////////////////////////////// SPI
+356:           // SPI Functions: SETUP_SPI, SPI_WRITE, SPI_READ, SPI_DATA_IN
+357:           // SPI Prototypes:
+358:           _bif void setup_spi(int32 mode);
+359:           _bif void spi_write(int8 value);
+360:           _bif int8 spi_read(void);
+361:           _bif int8 spi_read(int8 value);
+362:           _bif int1 spi_data_in(void);
+363:           // Constants used in SETUP_SPI() are:
+364:           #define SPI_DISABLED             0x00
+365:           #define SPI_MASTER               0x20
+366:           #define SPI_SLAVE                0x24
+367:           #define SPI_SCK_IDLE_HIGH        0x10
+368:           #define SPI_SCK_IDLE_LOW         0x00
+369:           #define SPI_CLK_DIV_4            0x00
+370:           #define SPI_CLK_DIV_16           0x01
+371:           #define SPI_CLK_DIV_64           0x02
+372:           #define SPI_CLK_T2               0x03
+373:           #define SPI_SS_DISABLED          0x01
+374:           
+375:           #define SPI_XMIT_L_TO_H          0x4000
+376:           #define SPI_XMIT_H_TO_L          0x0000
+377:           
+378:           #define SPI_SAMPLE_AT_MIDDLE     0x0000
+379:           #define SPI_SAMPLE_AT_END        0x8000
+380:           
+381:           //The following are provided for compatibility
+382:           #define SPI_L_TO_H       SPI_SCK_IDLE_LOW
+383:           #define SPI_H_TO_L       SPI_SCK_IDLE_HIGH
+384:           
+385:           ////////////////////////////////////////////////////////////////// UART
+386:           // UART Prototypes:
+387:           _bif void setup_uart(int32 baud);
+388:           _bif void setup_uart(int32 baud, int8 stream);
+389:           _bif void setup_uart(int32 baud, int8 stream, int32 clock);
+390:           _bif void set_uart_speed(int32 baud);
+391:           _bif void set_uart_speed(int32 baud, int8 stream);
+392:           _bif void set_uart_speed(int32 baud, int8 stream, int32 clock);
+393:           // Constants used in setup_uart() are:
+394:           // FALSE - Turn UART off
+395:           // TRUE  - Turn UART on
+396:           #define UART_ADDRESS           2
+397:           #define UART_DATA              4
+398:           #define UART_AUTODETECT        8
+399:           #define UART_AUTODETECT_NOWAIT 9
+400:           #define UART_WAKEUP_ON_RDA     10
+401:           #define UART_SEND_BREAK        13
+402:           ////////////////////////////////////////////////////////////////// COMP
+403:           // Comparator Variables: C1OUT, C2OUT
+404:           // Comparator Prototypes:
+405:           _bif void setup_comparator(int32 mode);
+406:           // Constants used in setup_comparator() are:
+407:           #define A0_A3_A1_A3  0xfff04
+408:           #define A0_A3_A1_A2_OUT_ON_A4_A5  0xfcf03
+409:           #define A0_A3_A1_A3_OUT_ON_A4_A5  0xbcf05
+410:           #define NC_NC_NC_NC  0x0ff07
+411:           #define A0_A3_A1_A2  0xfff02
+412:           #define A0_A3_NC_NC_OUT_ON_A4  0x9ef01
+413:           #define A0_VR_A1_VR 0x3ff06
+414:           #define A3_VR_A2_VR 0xcff0e
+415:           #define CP1_INVERT  0x0000010
+416:           #define CP2_INVERT  0x0000020
+417:           
+418:           #bit C1OUT = 0xfb4.6     
+419:           #bit C2OUT = 0xfb4.7     
+420:           
+421:           ////////////////////////////////////////////////////////////////// VREF
+422:           // VREF Prototypes:
+423:           _bif void setup_vref(int8 mode);
+424:           // Constants used in setup_vref() are:
+425:           #define VREF_LOW  0xa0
+426:           #define VREF_HIGH 0x80
+427:           // Or (with |) the above with a number 0-15
+428:           #define VREF_F5   0x40
+429:           #define VREF_COMP 0x10
+430:           
+431:           ////////////////////////////////////////////////////////////////// VREF
+432:           // LVD Prototypes:
+433:           _bif void setup_low_volt_detect(int8 mode);
+434:           // Constants used in setup_low_volt_detect() are:
+435:           #define LVD_LVDIN   0x1F
+436:           #define LVD_45 0x1E
+437:           #define LVD_42 0x1D
+438:           #define LVD_40 0x1C
+439:           #define LVD_38 0x1B
+440:           #define LVD_36 0x1A
+441:           #define LVD_35 0x19
+442:           #define LVD_33 0x18
+443:           #define LVD_30 0x17
+444:           #define LVD_28 0x16
+445:           #define LVD_27 0x15
+446:           #define LVD_25 0x14
+447:           #define LVD_24 0x13
+448:           #define LVD_23 0x12
+449:           #define LVD_22 0x11
+450:           #define LVD_21 0x10
+451:           
+452:           #define LVD_TRIGGER_BELOW 0
+453:           #define LVD_TRIGGER_ABOVE 0x80
+454:           
+455:           
+456:           ////////////////////////////////////////////////////////////////// INTERNAL RC
+457:           // Oscillator Prototypes:
+458:           _bif int8 setup_oscillator(int16 mode);
+459:           _bif int8 setup_oscillator(int16 mode, signed int8 tune);
+460:           // Constants used in setup_oscillator() are:
+461:           // First param:
+462:           #define OSC_31KHZ              0
+463:           #define OSC_125KHZ             0x10
+464:           #define OSC_250KHZ             0x20
+465:           #define OSC_500KHZ             0x30
+466:           #define OSC_1MHZ               0x40
+467:           #define OSC_2MHZ               0x50
+468:           #define OSC_4MHZ               0x60
+469:           #define OSC_8MHZ               0x70
+470:           // The following may be OR'ed in with the above using |
+471:           #define OSC_TIMER1             1
+472:           #define OSC_INTRC              2
+473:           #define OSC_NORMAL             0
+474:           // The following may be OR'ed in with the above using |
+475:           #define OSC_IDLE_MODE          0x80
+476:           #define OSC_31250              0x8000
+477:           // A second optional parameter may be used with this part to fine
+478:           // tune the speed (signed int,-32 to 31)
+479:           // Result may be (ignore all other bits)
+480:           #define OSC_STATE_STABLE       4
+481:           #define OSC_STATE_EXT_RUNNING  8
+482:           
+483:           
+484:           ////////////////////////////////////////////////////////////////// ADC
+485:           // ADC Functions: SETUP_ADC(), SETUP_ADC_PORTS() (aka SETUP_PORT_A),
+486:           //                SET_ADC_CHANNEL(), READ_ADC()
+487:           // ADC Prototypes:
+488:           _bif void setup_adc(int16 mode);
+489:           _bif int8 read_adc(void);
+490:           _bif int8 read_adc(int8 mode);
+491:           _bif int16 read_adc(void);
+492:           _bif int16 read_adc(int8 mode);
+493:           _bif int1 adc_done(void);
+494:           // Constants used for SETUP_ADC() are:
+495:           #define ADC_OFF               0           // ADC Off
+496:           #define ADC_CLOCK_DIV_2   0x100
+497:           #define ADC_CLOCK_DIV_4    0x04
+498:           #define ADC_CLOCK_DIV_8    0x01
+499:           #define ADC_CLOCK_DIV_16   0x05
+500:           #define ADC_CLOCK_DIV_32   0x02
+501:           #define ADC_CLOCK_DIV_64   0x06
+502:           #define ADC_CLOCK_INTERNAL 0x07           // Internal 2-6us
+503:           // The following may be OR'ed in with the above using |
+504:           #define ADC_TAD_MUL_0      0x00
+505:           #define ADC_TAD_MUL_2      0x08
+506:           #define ADC_TAD_MUL_4      0x10
+507:           #define ADC_TAD_MUL_6      0x18
+508:           #define ADC_TAD_MUL_8      0x20
+509:           #define ADC_TAD_MUL_12     0x28
+510:           #define ADC_TAD_MUL_16     0x30
+511:           #define ADC_TAD_MUL_20     0x38
+512:           
+513:           //ADC Prototypes:
+514:           _bif void setup_adc_ports(int8 pins);
+515:           _bif void setup_adc_ports(int8 pins, int8 reference);
+516:           _bif void set_adc_channel(int8 channel);
+517:           // Constants used in SETUP_ADC_PORTS() are:
+518:           // First argument:
+519:           #define NO_ANALOGS   0x0F   // None
+520:           #define ALL_ANALOG   0x00   // A0 A1 A2 A3 A5 E0 E1 E2 B2 B3 B1 B4 B0     
+521:           #define AN0_TO_AN11  0x03   // A0 A1 A2 A3 A5 E0 E1 E2 B2 B3 B1 B4       
+522:           #define AN0_TO_AN10  0x04   // A0 A1 A2 A3 A5 E0 E1 E2 B2 B3 B1          
+523:           #define AN0_TO_AN9   0x05   // A0 A1 A2 A3 A5 E0 E1 E2 B2 B3             
+524:           #define AN0_TO_AN8   0x06   // A0 A1 A2 A3 A5 E0 E1 E2 B2                
+525:           #define AN0_TO_AN7   0x07   // A0 A1 A2 A3 A5 E0 E1 E2                   
+526:           #define AN0_TO_AN6   0x08   // A0 A1 A2 A3 A5 E0 E1                      
+527:           #define AN0_TO_AN5   0x09   // A0 A1 A2 A3 A5 E0                         
+528:           #define AN0_TO_AN4   0x0A   // A0 A1 A2 A3 A5
+529:           #define AN0_TO_AN3   0x0B   // A0 A1 A2 A3
+530:           #define AN0_TO_AN2   0x0C   // A0 A1 A2
+531:           #define AN0_TO_AN1   0x0D   // A0 A1
+532:           #define AN0          0x0E   // A0
+533:           #define AN0_TO_AN11_ANALOG     0x03   //!old only provided for compatibility
+534:           #define AN0_TO_AN10_ANALOG     0x04   //!old only provided for compatibility
+535:           #define AN0_TO_AN9_ANALOG      0x05   //!old only provided for compatibility
+536:           #define AN0_TO_AN8_ANALOG      0x06   //!old only provided for compatibility
+537:           #define AN0_TO_AN7_ANALOG      0x07   //!old only provided for compatibility   
+538:           #define AN0_TO_AN6_ANALOG      0x08   //!old only provided for compatibility   
+539:           #define AN0_TO_AN5_ANALOG      0x09   //!old only provided for compatibility   
+540:           #define AN0_TO_AN4_ANALOG      0x0A   //!old only provided for compatibility
+541:           #define AN0_TO_AN3_ANALOG      0x0B   //!old only provided for compatibility
+542:           #define AN0_TO_AN2_ANALOG      0x0C   //!old only provided for compatibility
+543:           #define AN0_TO_AN1_ANALOG      0x0D   //!old only provided for compatibility
+544:           #define AN0_ANALOG             0x0E   //!old only provided for compatibility
+545:           
+546:           // Optional Second argument:
+547:           #define VSS_VDD               0x00              // Range 0-Vdd
+548:           #define VREF_VREF             0x30              // Range VrefL-VrefH
+549:           #define VREF_VDD              0x20              // Range VrefL-Vdd
+550:           #define VSS_VREF              0x10              // Range 0-VrefH
+551:           
+552:           // Constants used in READ_ADC() are:
+553:           #define ADC_START_AND_READ     7   // This is the default if nothing is specified
+554:           #define ADC_START_ONLY         1
+555:           #define ADC_READ_ONLY          6
+556:           
+557:           ////////////////////////////////////////////////////////////////// BIF
+558:           // Built In Functions Prototypes
+559:           //
+560:           // Math Prototypes:
+561:           _bif signed int8 abs(signed int8 x);
+562:           _bif signed int16 abs(signed int16 x);
+563:           _bif signed int32 abs(signed int32 x);
+564:           _bif float32 abs(float32 x);
+565:           _bif unsigned int16 _mul(unsigned int8, unsigned int8);
+566:           _bif signed int16 _mul(signed int8, signed int8);
+567:           _bif unsigned int32 _mul(unsigned int16, unsigned int16);
+568:           _bif signed int32 _mul(signed int16, signed int16);
+569:           
+570:           // Memory Manipulation Prototypes:
+571:           _bif int8 read_bank(int8 bank, int8 offset);
+572:           _bif void write_bank(int8 bank, int8 offset, int8 value);
+573:           _bif void strcpy(char* dest, char* src);
+574:           _bif void strcopy(char* dest, char* src);
+575:           _bif void memset(unsigned int8* destination, unsigned int8 value, unsigned int16 num);
+576:           _bif void memcpy(unsigned int8* destination, unsigned int8* source, unsigned int16 num);
+577:           
+578:           // String Prototypes:
+579:           _bif char toupper(char cvalue);
+580:           _bif char tolower(char cvalue);
+581:           _bif void sprintf(char* string, char* cstring, ...);
+582:           
+583:           // Data Manipulators Prototypes:
+584:           _bif int1 shift_left(unsigned int8* address, unsigned int8 bytes, int1 value);
+585:           _bif int1 shift_right(unsigned int8* address, unsigned int8 bytes, int1 value);
+586:           _bif void rotate_left(unsigned int8* address, unsigned int8 bytes);
+587:           _bif void rotate_right(unsigned int8* address, unsigned int8 bytes);
+588:           _bif void swap(unsigned int8 value);
+589:           _bif unsigned int8 make8(unsigned int16 var, unsigned int8 offset);
+590:           _bif unsigned int8 make8(unsigned int32 var, unsigned int8 offset);
+591:           _bif unsigned int16 make16(unsigned int8 varhigh, unsigned int8 varlow);
+592:           _bif unsigned int32 make32(unsigned int16 var1);
+593:           _bif unsigned int32 make32(unsigned int16 var1, unsigned int16 var2);
+594:           _bif unsigned int32 make32(unsigned int16 var1, unsigned int8 var2);
+595:           _bif unsigned int32 make32(unsigned int16 var1, unsigned int8 var2, unsigned int8 var3);
+596:           _bif unsigned int32 make32(unsigned int8 var1);
+597:           _bif unsigned int32 make32(unsigned int8 var1, unsigned int8 var2);
+598:           _bif unsigned int32 make32(unsigned int8 var1, unsigned int8 var2, unsigned int8 var3);
+599:           _bif unsigned int32 make32(unsigned int8 var1, unsigned int8 var2, unsigned int8 var3, unsigned int8 var4);
+600:           _bif unsigned int32 make32(unsigned int8 var1, unsigned int16 var2);
+601:           _bif unsigned int32 make32(unsigned int8 var1, unsigned int16 var2, unsigned int8 var3);
+602:           _bif unsigned int32 make32(unsigned int8 var1, unsigned int8 var2, unsigned int16 var3);
+603:           _bif void bit_set(unsigned int8 var, unsigned int8 bit);
+604:           _bif void bit_set(unsigned int16 var, unsigned int8 bit);
+605:           _bif void bit_set(unsigned int32 var, unsigned int8 bit);
+606:           _bif void bit_clear(unsigned int8 var, unsigned int8 bit);
+607:           _bif void bit_clear(unsigned int16 var, unsigned int8 bit);
+608:           _bif void bit_clear(unsigned int32 var, unsigned int8 bit);
+609:           _bif int1 bit_test(unsigned int8 var, unsigned int8 bit);
+610:           _bif int1 bit_test(unsigned int16 var, unsigned int8 bit);
+611:           _bif int1 bit_test(unsigned int32 var, unsigned int8 bit);
+612:           
+613:           // #use delay() Prototypes:
+614:           _bif void delay_cycles(unsigned int8 count);
+615:           _bif void delay_ms(unsigned int16 time);
+616:           _bif void delay_us(unsigned int16 time);
+617:           
+618:           // #use rs232() Prototypes:
+619:           _bif void putchar(char cdata);
+620:           _bif void putchar(char cdata, unsigned int8 stream);
+621:           _bif void puts(char* string);
+622:           _bif void puts(char* string, unsigned int8 stream);
+623:           _bif char getch(void);
+624:           _bif char getch(unsigned int8 stream);
+625:           _bif void gets(char* string);
+626:           _bif void gets(char* string, unsigned int8 stream);
+627:           _bif int1 kbhit(void);
+628:           _bif int1 kbhit(unsigned int8 stream);
+629:           _bif void printf(char* string, ...);
+630:           _bif void fprintf(unsigned int8 stream, char* string, ...);
+631:           _bif void putc_send(void);
+632:           _bif void fputc_send(unsigned int8 stream);
+633:           _bif int1 rcv_buffer_full(void);
+634:           _bif int1 rcv_buffer_full(unsigned int8 stream);
+635:           _bif unsigned int16 rcv_buffer_bytes(void);
+636:           _bif unsigned int16 rcv_buffer_bytes(unsigned int8 stream);
+637:           _bif int1 tx_buffer_full(void);
+638:           _bif int1 tx_buffer_full(unsigned int8 stream);
+639:           _bif unsigned int16 tx_buffer_bytes(void);
+640:           _bif unsigned int16 tx_buffer_bytes(unsigned int8 stream);
+641:           
+642:           // #use i2c() Prototypes:
+643:           _bif unsigned int8 i2c_read(void);
+644:           _bif unsigned int8 i2c_read(unsigned int8 stream);
+645:           _bif unsigned int8 i2c_read(unsigned int8 stream, int1 ack);
+646:           _bif int1 i2c_write(unsigned int8 data);
+647:           _bif int1 i2c_write(unsigned int8 stream, unsigned int8 data);
+648:           _bif void i2c_start(void);
+649:           _bif void i2c_start(unsigned int8 stream);
+650:           _bif void i2c_start(unsigned int8 stream, unsigned int8 restart);
+651:           _bif void i2c_stop(void);
+652:           _bif void i2c_stop(unsigned int8 stream);
+653:           _bif int8 i2c_isr_state(void);
+654:           _bif void i2c_slaveaddr(unsigned int8 addr);
+655:           _bif void i2c_slaveaddr(unsigned int8 stream, unsigned int8 addr);
+656:           _bif int1 i2c_poll(void);
+657:           _bif int1 i2c_poll(unsigned int8 stream);
+658:           _bif void i2c_init(unsigned int32 baud);
+659:           _bif void i2c_init(unsigned int8 stream, unsigned int32 baud);
+660:           
+661:           // #use spi() Prototypes:
+662:           _bif unsigned int8 spi_xfer(void);
+663:           _bif unsigned int16 spi_xfer(void);
+664:           _bif unsigned int32 spi_xfer(void);
+665:           _bif unsigned int8 spi_xfer(unsigned int8 data);
+666:           _bif unsigned int16 spi_xfer(unsigned int16 data);
+667:           _bif unsigned int32 spi_xfer(unsigned int32 data);
+668:           _bif unsigned int8 spi_xfer(unsigned int8 stream, unsigned int8 data);
+669:           _bif unsigned int16 spi_xfer(unsigned int8 stream, unsigned int16 data);
+670:           _bif unsigned int32 spi_xfer(unsigned int8 stream, unsigned int32 data);
+671:           _bif unsigned int8 spi_xfer(unsigned int8 stream, unsigned int8 data, unsigned int8 bits);
+672:           _bif unsigned int16 spi_xfer(unsigned int8 stream, unsigned int16 data, unsigned int8 bits);
+673:           _bif unsigned int32 spi_xfer(unsigned int8 stream, unsigned int32 data, unsigned int8 bits);
+674:           _bif void spi_init(unsigned int32 baud);
+675:           _bif void spi_init(unsigned int8 stream, unsigned int32 baud);
+676:           _bif void spi_speed(unsigned int32 baud);
+677:           _bif void spi_speed(unsigned int8 stream, unsigned int32 baud);
+678:           _bif void spi_speed(unsigned int8 stream, unsigned int32 baud, unsigned int32 clock);
+679:           _bif void spi_prewrite(unsigned int8 data);
+680:           _bif void spi_prewrite(unsigned int16 data);
+681:           _bif void spi_prewrite(unsigned int32 data);
+682:           _bif void spi_prewrite(unsigned int8, unsigned int8 data);
+683:           _bif void spi_prewrite(unsigned int8, unsigned int16 data);
+684:           _bif void spi_prewrite(unsigned int8, unsigned int32 data);
+685:           _bif unsigned int8 spi_xfer_in(void);
+686:           _bif unsigned int16 spi_xfer_in(void);
+687:           _bif unsigned int32 spi_xfer_in(void);
+688:           _bif unsigned int8 spi_xfer_in(unsigned int8 bits);
+689:           _bif unsigned int16 spi_xfer_in(unsigned int8 bits);
+690:           _bif unsigned int32 spi_xfer_in(unsigned int8 bits);
+691:           _bif unsigned int8 spi_xfer_in(unsigned int8 stream, unsigned int8 bits);
+692:           _bif unsigned int16 spi_xfer_in(unsigned int8 stream, unsigned int8 bits);
+693:           _bif unsigned int32 spi_xfer_in(unsigned int8 stream, unsigned int8 bits);
+694:           
+695:           // #use rtos() Prototypes:
+696:           _bif void rtos_run(void);
+697:           _bif void rtos_yield(void);
+698:           _bif void rtos_enable(unsigned int8 task);
+699:           _bif void rtos_disable(unsigned int8 task);
+700:           _bif void rtos_terminate(void);
+701:           _bif void rtos_await(int1 flag);
+702:           _bif void rtos_wait(unsigned int8 sem);
+703:           _bif void rtos_signal(unsigned int8 sem);
+704:           _bif void rtos_msg_send(unsigned int8 task, unsigned int8 msg);
+705:           _bif unsigned int8 rtos_msg_read(void);
+706:           _bif unsigned int8 rtos_msg_poll(void);
+707:           _bif int1 rtos_overrun(unsigned int8 task);
+708:           _bif void rtos_stats(unsigned int8 task, unsigned int8* stat);
+709:           
+710:           // #use timer() Prototypes:
+711:           _bif unsigned int8 get_ticks(void);
+712:           _bif unsigned int16 get_ticks(void);
+713:           _bif unsigned int32 get_ticks(void);
+714:           _bif unsigned int8 get_ticks(unsigned int8 stream);
+715:           _bif unsigned int16 get_ticks(unsigned int8 stream);
+716:           _bif unsigned int32 get_ticks(unsigned int8 stream);
+717:           _bif void set_ticks(unsigned int8 value);
+718:           _bif void set_ticks(unsigned int16 value);
+719:           _bif void set_ticks(unsigned int32 value);
+720:           _bif void set_ticks(unsigned int8 stream, unsigned int8 value);
+721:           _bif void set_ticks(unsigned int8 stream, unsigned int16 value);
+722:           _bif void set_ticks(unsigned int8 stream, unsigned int32 value);
+723:           
+724:           // #use pwm() Prototypes:
+725:           _bif void pwm_on(void);
+726:           _bif void pwm_on(unsigned int8 stream);
+727:           _bif void pwm_off(void);
+728:           _bif void pwm_off(unsigned int8 stream);
+729:           _bif void pwm_set_duty(unsigned int16 duty);
+730:           _bif void pwm_set_duty(unsigned int8 stream, unsigned int16 duty);
+731:           _bif void pwm_set_duty_percent(unsigned int16 percent);
+732:           _bif void pwm_set_duty_percent(unsigned int8 stream, unsigned int16 percent);
+733:           _bif void pwm_set_frequency(unsigned int32 frequency);
+734:           _bif void pwm_set_frequency(unsigned int8 stream, unsigned int32 frequency);
+735:           
+736:           // #use capture() Prototypes:
+737:           _bif unsigned int16 get_capture_time(void);
+738:           _bif unsigned int16 get_capture_time(unsigned int8 stream);
+739:           _bif int1 get_capture_event(void);
+740:           _bif int1 get_capture_event(unsigned int8 stream);
+741:           
+742:           // Enviroment Prototypes:
+743:           //_bif unsigned int8 getenv(char* cstring);
+744:           
+745:           // Address Prototypes:
+746:           #ifndef __ADDRESS__
+747:            #if defined(__PCM__) || define(__PCB__)
+748:             typedef unsigned int16 __ADDRESS__;
+749:            #else
+750:             typedef unsigned int32 __ADDRESS__;
+751:            #endif
+752:           #endif
+753:           _bif void goto_address(__ADDRESS__ address);
+754:           _bif __ADDRESS__ label_address(__ADDRESS__ label);
+755:           
+756:           // Program Memory Prototypes:
+757:           _bif void read_program_memory(__ADDRESS__ address, unsigned int8* dataptr, unsigned int16 count);
+758:           _bif unsigned int16 read_program_eeprom(__ADDRESS__ address);
+759:           _bif void erase_program_eeprom(__ADDRESS__ address);
+760:           _bif void write_program_memory(__ADDRESS__ address, unsigned int8* dataptr, unsigned int16 count);
+761:           _bif void write_program_eeprom(__ADDRESS__ address, unsigned int16 data);
+762:           
+763:           // EEPROM Prototypes:
+764:           #ifndef __EEADDRESS__
+765:            #if getenv("DATA_EEPROM")>=0x100
+766:             typedef unsigned int16 __EEADDRESS__;
+767:            #else
+768:             typedef unsigned int8 __EEADDRESS__;
+769:            #endif
+770:           #endif
+771:           _bif unsigned int8 read_eeprom(__EEADDRESS__ address);
+772:           _bif void write_eeprom(__EEADDRESS__ address, unsigned int8 value);
+773:           
+774:           ////////////////////////////////////////////////////////////////// INT
+775:           // Interrupt Functions: ENABLE_INTERRUPTS(), DISABLE_INTERRUPTS(),
+776:           //                      CLEAR_INTERRUPT(), INTERRUPT_ACTIVE(),
+777:           //                      EXT_INT_EDGE()
+778:           // INT Prototoypes:
+779:           _bif void enable_interrupts(int32 interrupt);
+780:           _bif void disable_interrupts(int32 interrupt);
+781:           _bif void clear_interrupt(int32 interrupt);
+782:           _bif int1 interrupt_active(int32 interrupt);
+783:           _bif void ext_int_edge(int8 source, int8 edge);
+784:           _bif void jump_to_irs(int16 address);
+785:           // Constants used in EXT_INT_EDGE() are:
+786:           #define L_TO_H              0x40
+787:           #define H_TO_L                 0
+788:           // Constants used in ENABLE/DISABLE_INTERRUPTS() are:
+789:           #define GLOBAL                    0xF2C0
+790:           #define PERIPH                    0xF240
+791:           #define INT_RTCC                  0x00F220
+792:           #define INT_TIMER0                0x00F220
+793:           #define INT_TIMER1                0x009D01
+794:           #define INT_TIMER2                0x009D02
+795:           #define INT_TIMER3                0x00A002
+796:           #define INT_EXT_L2H               0x5000F210
+797:           #define INT_EXT_H2L               0x6000F210
+798:           #define INT_EXT                   0x00F210
+799:           #define INT_EXT1_L2H              0x5001F008
+800:           #define INT_EXT1_H2L              0x6001F008
+801:           #define INT_EXT1                  0x00F008
+802:           #define INT_EXT2_L2H              0x5002F010
+803:           #define INT_EXT2_H2L              0x6002F010
+804:           #define INT_EXT2                  0x00F010
+805:           #define INT_RB                    0x00FFF208
+806:           #define INT_AD                    0x009D40
+807:           #define INT_RDA                   0x009D20
+808:           #define INT_TBE                   0x009D10
+809:           #define INT_SSP                   0x009D08
+810:           #define INT_CCP1                  0x009D04
+811:           #define INT_CCP2                  0x00A001
+812:           #define INT_BUSCOL                0x00A008
+813:           #define INT_LOWVOLT               0x00A004
+814:           #define INT_COMP                  0x00A040
+815:           #define INT_EEPROM                0x00A010
+816:           #define INT_OSCF                  0x00A080
+817:           #define INT_SPP                   0x009D80
+818:           #define INT_USB                   0x00A020
+819:           
+820:           #list

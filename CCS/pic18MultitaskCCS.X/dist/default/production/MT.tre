@@ -1,0 +1,62 @@
+ÀÄMultiTaskCCS
+   ÃÄMAIN  0/58  Ram=0
+   ³  ÃÄ@cinit1  (Inline)  Ram=0
+   ³  ÀÄMCU_Init  0/16  Ram=0
+   ³     ÃÄPort_Init  0/48  Ram=0
+   ³     ÃÄinicio_pwm  0/32  Ram=0
+   ³     ÃÄProcesos_Init  0/160  Ram=0
+   ³     ÃÄinte_Init  0/10  Ram=0
+   ³     ÀÄConfig_tmrs  0/16  Ram=0
+   ÃÄTimer0_ISR  0/278  Ram=5
+   ³  ÃÄ@PRINTF_D_9600_31766_31767  0/178  Ram=6
+   ³  ³  ÃÄ@DIV88  0/40  Ram=3
+   ³  ³  ÀÄ@DIV88  0/40  Ram=3
+   ³  ÃÄ@PRINTF_LU_9600_31766_31767  0/164  Ram=9
+   ³  ÃÄ@PRINTF_D_9600_31766_31767  0/178  Ram=6
+   ³  ³  ÀÄ*
+   ³  ÃÄ@PRINTF_D_9600_31766_31767  0/178  Ram=6
+   ³  ³  ÀÄ*
+   ³  ÃÄ@PRINTF_LU_9600_31766_31767  0/164  Ram=9
+   ³  ÀÄ@PRINTF_D_9600_31766_31767  0/178  Ram=6
+   ³     ÀÄ*
+   ÃÄinter_quantum  0/410  Ram=6
+   ³  ÃÄdesactivar_timer  0/4  Ram=0
+   ³  ÃÄ@MUL1616  0/32  Ram=5
+   ³  ÀÄ@MUL3232  0/86  Ram=14
+   ÃÄData_ISR  0/36  Ram=0
+   ÃÄTask1  0/496  Ram=4
+   ÃÄTask2  0/704  Ram=6
+   ³  ÃÄ@PSTRINGC_9600_31766_31767  0/34  Ram=2
+   ³  ÃÄ@PSTRINGC_9600_31766_31767  0/34  Ram=2
+   ³  ÃÄ@PSTRINGC_9600_31766_31767  0/34  Ram=2
+   ³  ÃÄ@PSTRINGC_9600_31766_31767  0/34  Ram=2
+   ³  ÃÄ@PSTRINGC_9600_31766_31767  0/34  Ram=2
+   ³  ÃÄ@PSTRINGC_9600_31766_31767  0/34  Ram=2
+   ³  ÃÄ@PSTRINGC_9600_31766_31767  0/34  Ram=2
+   ³  ÃÄ@PSTRINGC_9600_31766_31767  0/34  Ram=2
+   ³  ÃÄ@PSTRINGC_9600_31766_31767  0/34  Ram=2
+   ³  ÀÄ@PSTRINGC_9600_31766_31767  0/34  Ram=2
+   ÃÄTask3  0/32  Ram=0
+   ÃÄTask4  0/1288  Ram=4
+   ÃÄTask5  0/260  Ram=4
+   ÀÄInicio_SO  0/622  Ram=7
+      ÃÄ@goto11631  0/78  Ram=0
+      ÃÄ@goto11651  0/44  Ram=0
+      ÃÄIsLoaded  0/44  Ram=3
+      ÃÄLoadProcess  0/284  Ram=6
+      ³  ÃÄ@PRINTF_D_9600_31766_31767  0/178  Ram=6
+      ³  ³  ÀÄ*
+      ³  ÃÄ@PRINTF_LU_9600_31766_31767  0/164  Ram=9
+      ³  ÀÄ@PRINTF_D_9600_31766_31767  0/178  Ram=6
+      ³     ÀÄ*
+      ÃÄIsLoaded  0/44  Ram=3
+      ÃÄUnLoadProcess  0/510  Ram=9
+      ³  ÃÄ@goto11598  0/48  Ram=0
+      ³  ÃÄ@PRINTF_D_9600_31766_31767  0/178  Ram=6
+      ³  ³  ÀÄ*
+      ³  ÃÄ@PRINTF_LU_9600_31766_31767  0/164  Ram=9
+      ³  ÀÄ@PRINTF_D_9600_31766_31767  0/178  Ram=6
+      ³     ÀÄ*
+      ÃÄdesactivar_timer  0/4  Ram=0
+      ÃÄactivar_timer  0/8  Ram=0
+      ÀÄactivar_timer  0/8  Ram=0

@@ -1,0 +1,51 @@
+ÀÄpic18MultitaskCCS
+   ÃÄMAIN  0/64  Ram=0
+   ³  ÃÄ@cinit1  (Inline)  Ram=0
+   ³  ÀÄInit_MCI  0/16  Ram=0
+   ³     ÃÄInit_PORTS  0/48  Ram=0
+   ³     ÃÄInit_PWM  0/32  Ram=0
+   ³     ÃÄInit_PROCESSES  0/160  Ram=0
+   ³     ÃÄInit_INTERRUPTS  0/10  Ram=0
+   ³     ÀÄInit_TIMERS  0/16  Ram=0
+   ÃÄIsr_TIMER0  0/278  Ram=5
+   ³  ÃÄ@PRINTF_D_9600_31766_31767  0/178  Ram=6
+   ³  ³  ÃÄ@DIV88  0/40  Ram=3
+   ³  ³  ÀÄ@DIV88  0/40  Ram=3
+   ³  ÃÄ@PRINTF_LU_9600_31766_31767  0/164  Ram=9
+   ³  ÃÄ@PRINTF_D_9600_31766_31767  0/178  Ram=6
+   ³  ³  ÀÄ*
+   ³  ÃÄ@PRINTF_D_9600_31766_31767  0/178  Ram=6
+   ³  ³  ÀÄ*
+   ³  ÃÄ@PRINTF_LU_9600_31766_31767  0/164  Ram=9
+   ³  ÀÄ@PRINTF_D_9600_31766_31767  0/178  Ram=6
+   ³     ÀÄ*
+   ÃÄIsr_QUANTUM  0/336  Ram=6
+   ³  ÃÄdisableQuantum  0/6  Ram=0
+   ³  ÃÄ@MUL1616  0/32  Ram=5
+   ³  ÀÄ@MUL3232  0/86  Ram=14
+   ÃÄIsr_Data  0/36  Ram=0
+   ÃÄTask1  0/496  Ram=4
+   ÃÄTask2  0/584  Ram=4
+   ÃÄTask3  0/32  Ram=0
+   ÃÄTask4  0/1288  Ram=4
+   ÃÄTask5  0/260  Ram=4
+   ÀÄOS  0/580  Ram=6
+      ÃÄ@goto11512  0/78  Ram=0
+      ÃÄ@goto11532  0/44  Ram=0
+      ÃÄIsLoaded  0/44  Ram=3
+      ÃÄLoadProcess  0/284  Ram=6
+      ³  ÃÄ@PRINTF_D_9600_31766_31767  0/178  Ram=6
+      ³  ³  ÀÄ*
+      ³  ÃÄ@PRINTF_LU_9600_31766_31767  0/164  Ram=9
+      ³  ÀÄ@PRINTF_D_9600_31766_31767  0/178  Ram=6
+      ³     ÀÄ*
+      ÃÄIsLoaded  0/44  Ram=3
+      ÃÄUnLoadProcess  0/506  Ram=9
+      ³  ÃÄ@goto11479  0/48  Ram=0
+      ³  ÃÄ@PRINTF_D_9600_31766_31767  0/178  Ram=6
+      ³  ³  ÀÄ*
+      ³  ÃÄ@PRINTF_LU_9600_31766_31767  0/164  Ram=9
+      ³  ÀÄ@PRINTF_D_9600_31766_31767  0/178  Ram=6
+      ³     ÀÄ*
+      ÃÄenableQuantum  0/8  Ram=0
+      ÀÄenableQuantum  0/8  Ram=0
